@@ -1,0 +1,24 @@
+Package: txomics
+Type: Package
+Title: Functional Analysis of Transcriptomic Data
+Version: 0.1.0
+Authors@R: person("Lucio", "Rezende Queiroz", email = "luciorqueiroz@gmail.com",
+  role = c("aut", "cre"))
+Description: Functional analysis of transcriptomic data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: dplyr,
+    purrr,
+    tidyr,
+    stringr,
+    readr,
+    readxl,
+    ggplot2,
+    jsonlite,
+    ggpubr,
+    ggrepel,
+    DESeq2,
+    fgsea,
+    tximport
+RoxygenNote: 6.0.1

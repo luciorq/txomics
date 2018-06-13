@@ -1,0 +1,115 @@
+---
+title: "txomics development"
+author: "Lucio Rezende Queiroz"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+md_document:
+    variant: markdown_github
+---
+
+# Before starting
+
+* Install devtools package using:
+`install.packages("devtools")`
+* Create package folder: `devtools::create("txomics")`
+
+
+# Adding dependencies
+```{r, eval = FALSE}
+## CRAN packages
+devtools::use_package("tidyr")
+devtools::use_package("dplyr")
+devtools::use_package("stringr")
+devtools::use_package("readxl")
+devtools::use_package("readr")
+devtools::use_package("jsonlite")
+devtools::use_package("purrr")
+devtools::use_package("ggplot2")
+devtools::use_package("ggrepel")
+devtools::use_package("ggpubr")
+
+## Bioconductor packages
+devtools::use_package("tximport")
+devtools::use_package("DESeq2")
+devtools::use_package("fgsea")
+```
+
+Edit devtools options for adding metadata to package
+
+```{r, eval = FALSE}
+getOption("devtools")
+getOption("devtools.path")
+getOption("devtools.name")
+getOption("devtools.desc.author")
+getOption("devtools.desc.license")
+
+options("devtools.name" = "Lucio Rezende Queiroz",
+        "devtools.desc.author" = 'person("Lucio", "Rezende Queiroz", 
+                                    email = "luciorqueiroz@gmail.com",
+                                    role = c("aut", "cre"))')
+```
+
+# Adding documentation
+
+Edit function files using `#'` followed by `@tag_name detail` to add documentation
+example:
+```{}
+#' Add together two numbers.
+#' 
+#' @param x A number.
+#' @param y A number.
+#' @return The sum of \code{x} and \code{y}.
+#' @examples
+#' add(1, 1)
+#' add(10, 1)
+add <- function(x, y) {
+  x + y
+}
+```
+
+
+use `devtools::document()` to automatic generate the man folder and Rd files for each function
+```{r, eval = FALSE}
+## rstudio ctrl/cmd + shift + D
+devtools::document()
+```
+
+# Installing
+
+Running `load_all()` simulates what happen when installing your package
+```{r, eval = FALSE}
+devtools::load_all()
+```
+
+
+# Create a README file
+
+```{r, eval = FALSE}
+devtools::use_readme_rmd()
+```
+
+
+# CRAN check
+
+Use `check()` to  check if the package is suitable for CRAN submission
+```{r, eval = FALSE}
+devtools::check(document = FALSE)
+```
+
+# Appendix
+
+## Licensing
+
+For this package I will be using the MIT license
+```{r, eval = FALSE}
+devtools::use_mit_license()
+```
+
+
+## Version numbers
+
+The version numbers used in txomics follow the x.y.z model where x is the major version, y is the minor version and is the patch number
+
+Odd minor version are development versions (e.g.: 1.11.0) and even minor version are release candidates (e.g.: 1.12.0).
+
+Patch number version is increased for every commit or merge to development branch (e.g.: from 1.11.1 to 1.11.2)
+
