@@ -8,17 +8,18 @@ Description: Functional analysis of transcriptomic data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: dplyr,
-    purrr,
+Imports: 
+    dplyr,
     tidyr,
     stringr,
-    readr,
     readxl,
-    ggplot2,
+    readr,
     jsonlite,
-    ggpubr,
+    purrr,
+    ggplot2,
     ggrepel,
+    ggpubr,
+    tximport,
     DESeq2,
-    fgsea,
-    tximport
+    fgsea
 RoxygenNote: 6.0.1
