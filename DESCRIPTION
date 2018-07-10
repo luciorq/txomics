@@ -8,6 +8,7 @@ Description: Functional analysis of transcriptomic data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+biocViews:
 Imports: 
     dplyr,
     tidyr,
