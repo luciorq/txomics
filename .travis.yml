@@ -14,3 +14,8 @@ r:
   - 3.5
   - release
   - devel
+
+bioc_packages:
+  - DESeq2
+  - tximport
+  - fgsea
