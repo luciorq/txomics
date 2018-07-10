@@ -3,6 +3,8 @@
 txomics <img src="man/figures/logo.png" align="right" />
 ========================================================
 
+[![Travis build status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics)
+
 Overview
 --------
 
@@ -11,10 +13,11 @@ Functional analysis of transcriptomic data
 Installation
 ------------
 
-You can install the released version of txomics from [CRAN](https://CRAN.R-project.org) with:
+When available you will be able to install the released version of txomics from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("txomics")
+## Not available yet
+## install.packages("txomics")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
