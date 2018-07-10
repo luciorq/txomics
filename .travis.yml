@@ -12,8 +12,9 @@ os:
 r:
   - 3.4
   - 3.5
-  - release
-  - devel
+#  - oldrel
+#  - release
+#  - devel
 
 bioc_packages:
   - DESeq2
