@@ -31,9 +31,9 @@ retrive_metadata_sra <- function() {
   ## INCOMPLETE
 }
 
-#' import_tx
+#' Import Expression Data
 #'
-#' Function used to import transcripts abundance data
+#' Function used to import transcripts count and abundance data
 #'
 #' @param dir path to files
 #'
@@ -70,13 +70,11 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
   txi
 }
 
-#' salmon_libtype
+#' Infer Library Construction Type
 #'
-#' retrieve optimal library preparation
+#' Retrieve optimal library preparation
 #' protocol used for Salmon method of
-#' mapping
-#'
-#' Function used to import transcripts abundance data
+#' mapping.
 #'
 #' @param dir path to Salmon results files
 #'
@@ -98,12 +96,12 @@ salmon_libtype <- function(dir) {
 }
 
 
-#' retrieve_mapping_rate
+#' Retrieve Mapping Rate
 #'
-#' retrieve total number of fragments,
+#' Retrieve total number of fragments,
 #' total mapped reads and
 #' mapping rate from a Salmon mapped
-#' sample
+#' sample.
 #'
 #' @param dir path to Salmon results files
 #'
@@ -132,10 +130,11 @@ retrieve_mapping_rate <- function( dir ) {
   })
 }
 
-#' filter_txi
+#' Filter Imported Transcripts
 #'
 #' Filter salmon quantification files
-#' based on metadata
+#' in a \code{txi} format
+#' based on metadata column and levels
 #'
 #' @param txi txi object
 #'
@@ -149,7 +148,11 @@ retrieve_mapping_rate <- function( dir ) {
 #'
 #' @export
 #'
-filter_txi <- function(txi, sample_table, var_column, var_levels = NULL) {
+#txi <- imported_transcripts
+#sample_table <- metadata_df
+#var_column <- "population"
+#var_levels <- c("Botucatu2014", "Rio2013")
+filter_txi <- function(txi, sample_table, var_column = NULL, var_levels = NULL) {
   first_column <- colnames(sample_table)[1]
   if(!is.null(var_levels)){
     extracted_cols <- sample_table %>%
@@ -157,16 +160,21 @@ filter_txi <- function(txi, sample_table, var_column, var_levels = NULL) {
       dplyr::select(1) %>%
       dplyr::filter((!!as.name(first_column)) %in% colnames(txi$counts) ) %>%
       unlist()
-    txi$counts <- txi$counts[, extracted_cols]
-    txi$abundance <- txi$abundance[, extracted_cols]
-    txi$length <- txi$length[, extracted_cols]
+  } else{
+    extracted_cols <- sample_table %>%
+      dplyr::select(1) %>%
+      unlist()
   }
+
+  txi$counts <- txi$counts[, extracted_cols]
+  txi$abundance <- txi$abundance[, extracted_cols]
+  txi$length <- txi$length[, extracted_cols]
   txi
 }
 
-#' DE_analysis
+#' Perform Differential Expression Analysis
 #'
-#' Run DESeq2 pipeline for differentially expressed genes
+#' Run DESeq2 pipeline for differentially expressed genes.
 #'
 #' @param txi tximport object containing reads counts
 #'
@@ -182,12 +190,18 @@ filter_txi <- function(txi, sample_table, var_column, var_levels = NULL) {
 #'
 #' @param beta_prior default = TRUE, set to FALSE to use apeglm method
 #'
-#' @return A \code{DESeqResults} object
+#' @return A \code{tibble} object
 #'
 #' @importFrom stats as.formula
 #'
 #' @export
 #'
+#txi <- txi_rio2013
+#txi <- filtered_txi
+#sample_table <- metadata_df
+#contrast_var <- "condition"
+#numerator <- "resistant"
+#denominator <- "susceptible"
 DE_analysis <- function(txi, sample_table, contrast_var,
                         numerator, denominator,
                         batch_var = NULL, beta_prior = TRUE){
@@ -202,53 +216,101 @@ DE_analysis <- function(txi, sample_table, contrast_var,
     design_formula <- as.formula(paste0("~",batch_var," + ",contrast_var))
   }
   dds1 <- DESeq2::DESeqDataSetFromTximport(txi, sample_table, design = design_formula)
-  if(isTRUE(beta_prior)){
-  dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
-    res <- DESeq2::results(dds, alpha = 0.05,
-                 contrast = c(contrast_var,numerator,denominator))
-  } else{
-    dds <- DESeq2::DESeq(dds1, betaPrior = FALSE)
-    res <- DESeq2::lfcShrink(dds, parallel = TRUE,
-                     coef=paste0(contrast_var,"_",numerator,"_vs_",denominator),
-                     type="apeglm")
-  }
-  cat(summary(res))
-  res
 
+  number_of_numerator_samples <- sample_table %>%
+    dplyr::filter(!!as.name(contrast_var) == numerator) %>%
+    base::nrow()
+  number_of_denominator_samples <- sample_table %>%
+    dplyr::filter(!!as.name(contrast_var) == denominator) %>%
+    base::nrow()
+  if(number_of_numerator_samples < 2) {
+    sample_replicates <- FALSE
+  }
+  if(number_of_denominator_samples < 2) {
+    sample_replicates <- FALSE
+  }
+  if(isTRUE(sample_replicates)){
+    if(isTRUE(beta_prior)){
+    dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
+    res <- DESeq2::results(dds, alpha = 0.05,
+                   contrast = c(contrast_var,numerator,denominator))
+    } else{
+      dds <- DESeq2::DESeq(dds1, betaPrior = FALSE)
+      res <- DESeq2::lfcShrink(dds, parallel = TRUE,
+                       coef=paste0(contrast_var,"_",numerator,"_vs_",denominator),
+                       type="apeglm")
+    }
+  } else {
+    #txi_row_names <- base::rownames(txi$abundance)
+    numerator_name <- sample_table %>%
+      dplyr::filter(!!as.name(contrast_var) == numerator)
+    numerator_name <- as.character(numerator_name[,1])
+    denominator_name <- sample_table %>%
+      dplyr::filter(!!as.name(contrast_var) == denominator)
+    denominator_name <- as.character(denominator_name[,1])
+
+    res <- txi$abundance %>%
+      dplyr::as_tibble(rownames = "gene") %>%
+      dplyr::mutate(FC = !!as.name(numerator_name)/!!as.name(denominator_name)) %>%
+      dplyr::mutate(log2FoldChange = log2(FC)) %>%
+      dplyr::mutate(log2FoldChange = dplyr::if_else(is.finite(log2FoldChange), log2FoldChange,NA_real_)) %>%
+      dplyr::mutate(pvalue = NA_real_) %>%
+      dplyr::mutate(padj = NA_real_)
+  }
+  #cat(summary(res))
+  if(!isTRUE("data.frame" %in% class(res))){
+    res <- res %>%
+      base::as.data.frame() %>%
+      dplyr::as_tibble(rownames = "gene")
+  }
+  res
 }
 
-#' GSEA_analysis
+#' Perform Gene Set Enrichment Analysis
 #'
-#' perform GSEA analysis
+#' Perform GSEA analysis.
 #'
 #' @param DE_res DESeqResults object containing DE analysis results
 #'
 #' @param gene_sets named list of genes named by gene set
 #'
 #' @param file_ext File extension where the gene sets should be loaded GMT is the default for GSEA
+#'   rds to load rds saved files.
 #'
 #' @return A \code{data_frame} containing GSEA results
 #'
 #' @export
 #'
+#DE_res <- de_res_rio2013
+#gene_sets <- aaegdata::kegg_gene_sets
 GSEA_analysis <- function(DE_res, gene_sets, file_ext = "gmt") {
   #library(fgsea)
   DE_res$log2FoldChange[is.na(DE_res$log2FoldChange)] <- 0
   sorted_res <- DE_res %>%
-    base::as.data.frame() %>%
-    dplyr::as_tibble(rownames = "rowname") %>%
-    #tibble::rownames_to_column() %>%
-    dplyr::select(rowname, log2FoldChange) %>%
+    #base::as.data.frame() %>%
+    #dplyr::as_tibble(rownames = "gene") %>%
+    dplyr::select(gene, log2FoldChange) %>%
     dplyr::arrange(log2FoldChange)
   ## ordered from strongest down-regulated to strongest upregulated
   ranked_genes <- sorted_res$log2FoldChange
-  names(ranked_genes) <- sorted_res$rowname
-  if(!is.list(gene_sets)){
-    if(file_ext == "gmt") {
-      gene_sets <- fgsea::gmtPathways(gene_sets)
-    } else {
-      if( file_ext == "rds") {
-        gene_sets <- readr::read_rds(gene_sets)
+  names(ranked_genes) <- sorted_res$gene
+  if(isTRUE("data.frame" %in% class(res))) {
+    gene_set_col <- base::colnames(gene_sets)[1]
+    temp_list <- gene_sets %>%
+      dplyr::group_by(!!as.name(gene_set_col)) %>%
+      dplyr::summarise(gene = list(gene))
+    gene_sets_list <- temp_list$gene
+    names(gene_sets_list) <- temp_list %>%
+      base::as.data.frame() %>%
+      .[,gene_set_col]
+    gene_sets <- gene_sets_list
+    if(!is.list(gene_sets)){
+      if(file_ext == "gmt") {
+        gene_sets <- fgsea::gmtPathways(gene_sets)
+      } else {
+        if( file_ext == "rds") {
+          gene_sets <- readr::read_rds(gene_sets)
+        }
       }
     }
   }
@@ -258,9 +320,9 @@ GSEA_analysis <- function(DE_res, gene_sets, file_ext = "gmt") {
                nperm = 100000)
 }
 
-#' LE_analysis
+#' Perform Leading Edge Analysis
 #'
-#' extract Leading Edge genes from GSEA results
+#' Extract Leading Edge genes from GSEA results.
 #'
 #' @param GSEA_res fgsea result data frame
 #'
@@ -277,10 +339,10 @@ LE_analysis <- function(GSEA_res, set){
     .$leadingEdge
 }
 
-#' retrieve_DEG
+#' Retrieve Differentially Expressed Genes
 #'
-#' extract differentially expressed genes from
-#' DESeq2 results based on p-value cuttof
+#' Extract differentially expressed genes from
+#' DESeq2 results based on p-value cuttof.
 #'
 #' @param DE_res DESeq2 results object
 #'
@@ -291,9 +353,9 @@ LE_analysis <- function(GSEA_res, set){
 retrieve_DEG <- function(DE_res){
   DE_res %>%
     base::as.data.frame() %>%
-    dplyr::as_tibble(rownames = "rowname") %>%
+    dplyr::as_tibble(rownames = "gene") %>%
     dplyr::filter(pvalue <= 0.05) %>%
-    .$rowname
+    .$gene
 }
 
 
@@ -311,9 +373,9 @@ retrieve_DEG <- function(DE_res){
 #  funs %>%
 #    map(~ mtcars %>% map_dbl(.x))
 
-#' plot_volcano
+#' Volcano Plot
 #'
-#' a volcano plot from DE genes analysis results
+#' A volcano plot from DE genes analysis results.
 #'
 #' @param DE_res DESeq2 results object
 #'
@@ -325,15 +387,18 @@ retrieve_DEG <- function(DE_res){
 #'
 #' @export
 #'
+#DE_res <- de_res_rio2013
+#DE_res <- de_res
+#DE_res <- res
 plot_volcano <- function(DE_res, lfc_threshold = NULL, FDR = FALSE ) {
   DE_res <- DE_res[order(DE_res$pvalue), ]
   results <- DE_res %>%
-    base::as.data.frame() %>%
-    dplyr::as_tibble(rownames = "Gene") %>%
+    dplyr::rename(Gene = 1) %>%
     dplyr::select(Gene, log2FoldChange, pvalue, padj) %>%
-    dplyr::mutate(sig=ifelse(DE_res$pvalue < 0.05, "p-value < 0.05", "Not significant")) %>%
-    dplyr::mutate(sig = ifelse( (DE_res$pvalue < 0.05) & (abs(DE_res$log2FoldChange) <  2),
-                                "DEG",sig))
+    dplyr::mutate(sig = dplyr::if_else(pvalue < 0.05, "p-value < 0.05", "Not significant")) %>%
+    dplyr::mutate(sig = dplyr::if_else( (pvalue < 0.05) & (abs(log2FoldChange) <  2), "DEG",sig)) %>%
+    dplyr::mutate(sig = dplyr::if_else(is.na(sig),"Not significant",sig))
+  #results %>% dplyr::filter(!is.na(sig))
   results$sig <- as.factor(results$sig)
   levels(results$sig) <- c( "Not significant","p-value < 0.05","DEG")
   #levels(results$sig)
@@ -345,7 +410,7 @@ plot_volcano <- function(DE_res, lfc_threshold = NULL, FDR = FALSE ) {
   }
   #library(ggrepel)
   results %>%
-    dplyr::filter( !is.na(sig) ) %>%
+    #dplyr::filter( !is.na(sig) ) %>%
     ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
     ggrepel::geom_text_repel(
       data = dplyr::filter(results, (pvalue < 0.05)&(abs(log2FoldChange) > lfc_threshold)),
@@ -363,17 +428,15 @@ plot_volcano <- function(DE_res, lfc_threshold = NULL, FDR = FALSE ) {
     ggpubr::theme_pubr()
 }
 
-#' Multiple plot function
+#' Multiple Plot
 #
 #' ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
 #' - cols:   Number of columns in layout
 #' - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#'
 #' If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
 #' then plot 1 will go in the upper left, 2 will go in the upper right, and
 #' 3 will go all the way across the bottom.
-#'
-#' adapted from ggplot2 cookbook
+#' adapted from ggplot2 cookbook.
 #'
 #' @param ... ggplot objects
 #'
