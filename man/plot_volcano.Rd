@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{plot_volcano}
 \alias{plot_volcano}
-\title{plot_volcano}
+\title{Volcano Plot}
 \usage{
 plot_volcano(DE_res, lfc_threshold = NULL, FDR = FALSE)
 }
@@ -17,5 +17,5 @@ plot_volcano(DE_res, lfc_threshold = NULL, FDR = FALSE)
 A \code{ggplot} object
 }
 \description{
-a volcano plot from DE genes analysis results
+A volcano plot from DE genes analysis results.
 }

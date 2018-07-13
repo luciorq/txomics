@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{LE_analysis}
 \alias{LE_analysis}
-\title{LE_analysis}
+\title{Perform Leading Edge Analysis}
 \usage{
 LE_analysis(GSEA_res, set)
 }
@@ -15,5 +15,5 @@ LE_analysis(GSEA_res, set)
 A \code{vector} of leading edge genes for the set
 }
 \description{
-extract Leading Edge genes from GSEA results
+Extract Leading Edge genes from GSEA results.
 }

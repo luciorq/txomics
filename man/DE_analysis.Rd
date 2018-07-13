@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{DE_analysis}
 \alias{DE_analysis}
-\title{DE_analysis}
+\title{Perform Differential Expression Analysis}
 \usage{
 DE_analysis(txi, sample_table, contrast_var, numerator, denominator,
   batch_var = NULL, beta_prior = TRUE)
@@ -23,8 +23,8 @@ DE_analysis(txi, sample_table, contrast_var, numerator, denominator,
 \item{beta_prior}{default = TRUE, set to FALSE to use apeglm method}
 }
 \value{
-A \code{DESeqResults} object
+A \code{tibble} object
 }
 \description{
-Run DESeq2 pipeline for differentially expressed genes
+Run DESeq2 pipeline for differentially expressed genes.
 }

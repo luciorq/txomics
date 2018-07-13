@@ -2,9 +2,9 @@
 % Please edit documentation in R/functions.R
 \name{filter_txi}
 \alias{filter_txi}
-\title{filter_txi}
+\title{Filter Imported Transcripts}
 \usage{
-filter_txi(txi, sample_table, var_column, var_levels = NULL)
+filter_txi(txi, sample_table, var_column = NULL, var_levels = NULL)
 }
 \arguments{
 \item{txi}{txi object}
@@ -20,5 +20,6 @@ A \code{txi} object
 }
 \description{
 Filter salmon quantification files
-based on metadata
+in a \code{txi} format
+based on metadata column and levels
 }

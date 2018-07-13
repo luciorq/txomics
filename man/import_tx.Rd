@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{import_tx}
 \alias{import_tx}
-\title{import_tx}
+\title{Import Expression Data}
 \usage{
 import_tx(dir, source = "salmon", names = "vectorbase")
 }
@@ -17,5 +17,5 @@ import_tx(dir, source = "salmon", names = "vectorbase")
 A \code{txi} object containing
 }
 \description{
-Function used to import transcripts abundance data
+Function used to import transcripts count and abundance data
 }

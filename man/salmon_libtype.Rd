@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{salmon_libtype}
 \alias{salmon_libtype}
-\title{salmon_libtype}
+\title{Infer Library Construction Type}
 \usage{
 salmon_libtype(dir)
 }
@@ -13,10 +13,7 @@ salmon_libtype(dir)
 A \code{data_frame} object
 }
 \description{
-retrieve optimal library preparation
+Retrieve optimal library preparation
 protocol used for Salmon method of
-mapping
-}
-\details{
-Function used to import transcripts abundance data
+mapping.
 }

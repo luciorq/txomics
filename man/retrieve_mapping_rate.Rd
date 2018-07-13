@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{retrieve_mapping_rate}
 \alias{retrieve_mapping_rate}
-\title{retrieve_mapping_rate}
+\title{Retrieve Mapping Rate}
 \usage{
 retrieve_mapping_rate(dir)
 }
@@ -13,8 +13,8 @@ retrieve_mapping_rate(dir)
 A \code{data_frame} object
 }
 \description{
-retrieve total number of fragments,
+Retrieve total number of fragments,
 total mapped reads and
 mapping rate from a Salmon mapped
-sample
+sample.
 }

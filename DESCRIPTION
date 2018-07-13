@@ -1,7 +1,7 @@
 Package: txomics
 Type: Package
 Title: Functional Analysis and Visualization of Transcriptomic Data
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: person("Lucio", "Rezende Queiroz", email = "luciorqueiroz@gmail.com",
   role = c("aut", "cre"))
 Description: Functional analysis of transcriptomic data.

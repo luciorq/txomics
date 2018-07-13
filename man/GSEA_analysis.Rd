@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{GSEA_analysis}
 \alias{GSEA_analysis}
-\title{GSEA_analysis}
+\title{Perform Gene Set Enrichment Analysis}
 \usage{
 GSEA_analysis(DE_res, gene_sets, file_ext = "gmt")
 }
@@ -11,11 +11,12 @@ GSEA_analysis(DE_res, gene_sets, file_ext = "gmt")
 
 \item{gene_sets}{named list of genes named by gene set}
 
-\item{file_ext}{File extension where the gene sets should be loaded GMT is the default for GSEA}
+\item{file_ext}{File extension where the gene sets should be loaded GMT is the default for GSEA
+rds to load rds saved files.}
 }
 \value{
 A \code{data_frame} containing GSEA results
 }
 \description{
-perform GSEA analysis
+Perform GSEA analysis.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{retrieve_DEG}
 \alias{retrieve_DEG}
-\title{retrieve_DEG}
+\title{Retrieve Differentially Expressed Genes}
 \usage{
 retrieve_DEG(DE_res)
 }
@@ -13,6 +13,6 @@ retrieve_DEG(DE_res)
 a \code{vector} of DEGs
 }
 \description{
-extract differentially expressed genes from
-DESeq2 results based on p-value cuttof
+Extract differentially expressed genes from
+DESeq2 results based on p-value cuttof.
 }
