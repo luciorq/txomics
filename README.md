@@ -8,11 +8,12 @@ txomics <img src="man/figures/logo.png" align="right" />
 Overview
 --------
 
-Functional analysis of transcriptomic data
+Functional Analysis and Visualization of Transcriptomic Data
 
 Installation
 ------------
 
+<!--
 When available you will be able to install the released version of txomics from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
@@ -21,20 +22,24 @@ When available you will be able to install the released version of txomics from 
 ```
 
 And the development version from [GitHub](https://github.com/) with:
+-->
+The development version can be installed from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("luciorq/txomics")
 ```
 
-Example
--------
+<!--
+## Example
 
 This is a basic example which shows you how to solve a common problem:
 
-``` r
+
+```r
 ## basic example code
 ```
+-->
 
 ------------------------------------------------------------------------
 

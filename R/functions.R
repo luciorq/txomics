@@ -1,6 +1,6 @@
 #' \code{txomics} package
 #'
-#' Functional analysis of transcriptomic data
+#' Functional Analysis and Visualization of Transcriptomic Data
 #'
 #' See the README on
 #' \href{https://github.com/luciorq/txomics#readme}{GitHub}
@@ -78,7 +78,7 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
 #'
 #' @param dir path to Salmon results files
 #'
-#' @return A \code{data_frame} object
+#' @return A \code{tibble} object
 #'
 #' @export
 #'
@@ -105,7 +105,7 @@ salmon_libtype <- function(dir) {
 #'
 #' @param dir path to Salmon results files
 #'
-#' @return A \code{data_frame} object
+#' @return A \code{tibble} object
 #'
 #' @export
 #'
@@ -223,6 +223,7 @@ DE_analysis <- function(txi, sample_table, contrast_var,
   number_of_denominator_samples <- sample_table %>%
     dplyr::filter(!!as.name(contrast_var) == denominator) %>%
     base::nrow()
+  sample_replicates <- TRUE
   if(number_of_numerator_samples < 2) {
     sample_replicates <- FALSE
   }
@@ -277,7 +278,7 @@ DE_analysis <- function(txi, sample_table, contrast_var,
 #' @param file_ext File extension where the gene sets should be loaded GMT is the default for GSEA
 #'   rds to load rds saved files.
 #'
-#' @return A \code{data_frame} containing GSEA results
+#' @return A \code{tibble} containing GSEA results
 #'
 #' @export
 #'
@@ -294,7 +295,7 @@ GSEA_analysis <- function(DE_res, gene_sets, file_ext = "gmt") {
   ## ordered from strongest down-regulated to strongest upregulated
   ranked_genes <- sorted_res$log2FoldChange
   names(ranked_genes) <- sorted_res$gene
-  if(isTRUE("data.frame" %in% class(res))) {
+  if(isTRUE("data.frame" %in% class(DE_res))) {
     gene_set_col <- base::colnames(gene_sets)[1]
     temp_list <- gene_sets %>%
       dplyr::group_by(!!as.name(gene_set_col)) %>%
