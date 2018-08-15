@@ -30,6 +30,12 @@ The development version can be installed from [GitHub](https://github.com/) with
 devtools::install_github("luciorq/txomics")
 ```
 
+Analysis conventions
+--------------------
+
+-   A `tibble` data frame is the major data structure to use.
+-   `txomics` is pipe-friendly and re-exports `%>%` for use.
+
 <!--
 ## Example
 

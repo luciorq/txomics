@@ -15,7 +15,7 @@ GSEA_analysis(DE_res, gene_sets, file_ext = "gmt")
 rds to load rds saved files.}
 }
 \value{
-A \code{data_frame} containing GSEA results
+A \code{tibble} containing GSEA results
 }
 \description{
 Perform GSEA analysis.

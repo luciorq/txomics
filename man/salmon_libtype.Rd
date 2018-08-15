@@ -10,7 +10,7 @@ salmon_libtype(dir)
 \item{dir}{path to Salmon results files}
 }
 \value{
-A \code{data_frame} object
+A \code{tibble} object
 }
 \description{
 Retrieve optimal library preparation

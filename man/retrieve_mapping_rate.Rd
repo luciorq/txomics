@@ -10,7 +10,7 @@ retrieve_mapping_rate(dir)
 \item{dir}{path to Salmon results files}
 }
 \value{
-A \code{data_frame} object
+A \code{tibble} object
 }
 \description{
 Retrieve total number of fragments,

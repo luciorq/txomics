@@ -6,7 +6,7 @@
 \alias{txomics-package}
 \title{\code{txomics} package}
 \description{
-Functional analysis of transcriptomic data
+Functional Analysis and Visualization of Transcriptomic Data
 }
 \details{
 See the README on

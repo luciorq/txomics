@@ -392,6 +392,14 @@ retrieve_DEG <- function(DE_res){
 #DE_res <- de_res
 #DE_res <- res
 plot_volcano <- function(DE_res, lfc_threshold = NULL, FDR = FALSE ) {
+  ##scatter_plot <- function(data, x, y) {
+  ##  x <- enquo(x)
+  ##  y <- enquo(y)
+  ##
+  ##  ggplot(data) + geom_point(aes(!!x, !!y))
+  ##}
+  ##scatter_plot(mtcars, disp, drat)
+
   DE_res <- DE_res[order(DE_res$pvalue), ]
   results <- DE_res %>%
     dplyr::rename(Gene = 1) %>%
