@@ -2,14 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{multiplot}
 \alias{multiplot}
-\title{Multiple Plot
-ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-- cols:   Number of columns in layout
-- layout: A matrix specifying the layout. If present, 'cols' is ignored.
-If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-then plot 1 will go in the upper left, 2 will go in the upper right, and
-3 will go all the way across the bottom.
-adapted from ggplot2 cookbook.}
+\title{Multiple Plot}
 \usage{
 multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
 }
@@ -23,7 +16,6 @@ multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
 \item{layout}{A matrix specifying the layout. If present, 'cols' is ignored}
 }
 \description{
-Multiple Plot
 ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
 - cols:   Number of columns in layout
 - layout: A matrix specifying the layout. If present, 'cols' is ignored.

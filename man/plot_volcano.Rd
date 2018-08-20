@@ -4,14 +4,17 @@
 \alias{plot_volcano}
 \title{Volcano Plot}
 \usage{
-plot_volcano(DE_res, lfc_threshold = NULL, FDR = FALSE)
+plot_volcano(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE)
 }
 \arguments{
-\item{DE_res}{DESeq2 results object}
+\item{de_res}{de_analysis result}
+
+\item{alpha}{default = 0.05}
 
 \item{lfc_threshold}{absolute value of log2FoldChange to limit the significance}
 
-\item{FDR}{use FDR adjusted p-value, logical}
+\item{fdr}{logical, should consider False discovery rate
+default = FALSE}
 }
 \value{
 A \code{ggplot} object
