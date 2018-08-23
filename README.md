@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-txomics <img src="man/figures/logo.png" align="right" />
-========================================================
+txomics <img src="man/figures/txomics_logo.svg" align="right" height=140 />
+===========================================================================
 
 [![Travis build status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics)
 

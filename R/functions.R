@@ -59,7 +59,7 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
     stringr::str_remove("_quant$")
   tx_vector <- readr::read_delim(files[1],
                                  "\t", escape_double = FALSE, trim_ws = TRUE) %>%
-    .$Name
+    dplyr::pull(Name)
   if(names == "vectorbase"){
     gene_vector <- tx_vector %>% stringr::str_remove("-R.*")
     tx2gene <- data.frame("TXNAME" = tx_vector, "GENEID" = gene_vector)
@@ -88,7 +88,7 @@ salmon_libtype <- function(dir) {
     ## Function to retrieve Salmon library from file
     lib_type <- paste0(dir,"/",lib,"/lib_format_counts.json") %>%
       jsonlite::read_json() %>%
-      .$expected_format
+      dplyr::pull(expected_format)
     dplyr::data_frame(lib, lib_type)
   }
   files <- list.files(dir)
@@ -334,9 +334,13 @@ gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
     }
   }
   gene_sets <- purrr::map(gene_sets, unique)
-  fgsea::fgsea(pathways = gene_sets,
+  gsea_res <- fgsea::fgsea(pathways = gene_sets,
                stats = ranked_genes,
                nperm = 100000)
+  gsea_res <- gsea_res %>%
+    dplyr::as_tibble() %>%
+    dplyr::rename(pvalue = pval)
+  gsea_res
 }
 
 #' Perform Leading Edge Analysis
@@ -355,7 +359,7 @@ le_analysis <- function(gsea_res, set){
   gsea_res %>%
     tidyr::unnest() %>%
     dplyr::filter(pathway == set) %>%
-    .$leadingEdge
+    dplyr::pull(leadingEdge)
 }
 
 #' Retrieve Differentially Expressed Genes
@@ -383,28 +387,14 @@ retrieve_deg <- function(de_res, alpha = 0.05 ,fdr = FALSE){
   if( isTRUE(fdr)){
     deg_genes <- de_res %>%
       dplyr::filter(padj <= alpha) %>%
-      .$gene
+      dplyr::pull(gene)
   } else {
     deg_genes <- de_res %>%
       dplyr::filter(pvalue <= alpha) %>%
-      .$gene
+      dplyr::pull(gene)
   }
   deg_genes
 }
-
-#use MAP family functions instead of FOR loops in R
-#
-#Use map family of functions from purrr package.
-#
-#example:
-#
-#  map_dbl(mtcars, mean)
-#  map_dbl(mtcars, median)
-#
-### multiple functions abstraction
-#  funs <- list(mean, median, sd)
-#  funs %>%
-#    map(~ mtcars %>% map_dbl(.x))
 
 ###############################################
 ##                                            #
@@ -423,13 +413,22 @@ retrieve_deg <- function(de_res, alpha = 0.05 ,fdr = FALSE){
 #'
 #' @param num number of genes to plot, filtering by variance between samples
 #'
+#' @param scale logical, default = "row", normalize data by row, column or none
+#'
+#' @param show_rownames logical, default = FALSE
+#'
+#' @param ... additional plot parameters, check pheatmap documentation for
+#'            details
+#'
 #' @export
 #'
 #tx <- imported_transcripts; sample_table <- samples_metadata
-#color_by = c("condition","population"); num = 500
-plot_heatmap <- function(tx, sample_table, color_by = NULL, num = NULL) {
+#color_by = c("condition","population"); num = 1000
+plot_heatmap <- function(tx, sample_table, color_by = NULL,
+                         num = NULL, scale = "row",
+                         show_rownames = FALSE, ...) {
   RowVar <- function(x, ...) {
-    rowSums((x - rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
+    base::rowSums((x - base::rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
   }
   if ( is.list(tx) ) {
     expression_matrix <- tx$abundance
@@ -440,38 +439,94 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL, num = NULL) {
     num <- nrow(expression_matrix)
   }
   mat <- expression_matrix[rowSums(expression_matrix) > 1,]
+  ## Scaling matrix
+  if(scale == "row"){
+    mat <- t(scale(t(mat),center = TRUE, scale = TRUE))
+  }else{
+    if(scale == "column"){
+      mat <- scale(mat, center = TRUE, scale = TRUE)
+    }
+  }
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
     dplyr::mutate( row_var = RowVar(.[2:length(.)])) %>%
     dplyr::arrange(-row_var) %>%
     utils::head(num) %>%
     dplyr::select( -row_var)
-
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
     as.matrix()
   rownames(mat) <- filtered_mat$gene
   if ( is.null(color_by) ) {
-    pheatmap::pheatmap( mat, scale = "row",
-                        show_rownames = FALSE,
-                        border_color = NA,
-                        treeheight_row = 20
-    )
+    annotation_df <- NA
+    annotation_pallete <- NA
   } else {
     annotation_df <- sample_table %>%
-      dplyr::select( sample,!!color_by  )
+      dplyr::select( sample,!!color_by )
     row_names <- annotation_df$sample
     annotation_df <- annotation_df %>%
       dplyr::select( -sample ) %>%
       as.data.frame()
     rownames(annotation_df) <-  row_names
-    pheatmap::pheatmap( mat, scale = "row",
-                        annotation_col = annotation_df,
-                        show_rownames = FALSE,
-                        border_color = NA,
-                        treeheight_row = 20
+    ## Generate Annotation discrete color pallette
+    df_names <- colnames(annotation_df)
+    df_lengths <- df_names %>%
+      purrr::map_dbl(~length(unique(annotation_df[[.x]])))
+    annotation_pallete <- purrr::map(
+      seq_along(df_lengths),
+      ~{
+        discrete_pallete <- df_lengths[.x] %>%
+          base::sum() %>%
+          viridis::viridis()
+        discrete_pallete
+      }
     )
+    names(annotation_pallete) <- df_names
+    #names(mat_colors$group) <- unique(col_groups)
+    for( i in colnames(annotation_df)){
+      names(annotation_pallete[[i]]) <- unique(annotation_df[,i])
+    }
   }
+
+  ## Sorting dendograms
+  sort_hclust <- function(...) {
+    stats::as.hclust(dendsort::dendsort(stats::as.dendrogram(...)))
+  }
+  mat_cluster_cols <- stats::hclust(stats::dist(t(mat)))
+  mat_cluster_cols <- sort_hclust(mat_cluster_cols)
+  mat_cluster_rows <- sort_hclust(stats::hclust(stats::dist(mat)))
+
+  ## Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
+  draw_colnames_45 <- function (coln, gaps, ...) {
+    coord <- pheatmap:::find_coordinates(length(coln), gaps)
+    x     <- coord$coord - 0.5 * coord$size
+    res   <- grid::textGrob(
+      coln, x = x, y = grid::unit(1, "npc") - grid::unit(3,"bigpts"),
+      vjust = 0.75, hjust = 1, rot = 45, gp = grid::gpar(...)
+    )
+    return(res)
+  }
+  assignInNamespace(
+    x = "draw_colnames",
+    value = "draw_colnames_45",
+    ns = asNamespace("pheatmap")
+  )
+
+  pheatmap::pheatmap(
+    mat = mat,
+    color = viridis::viridis(100, direction = -1),
+    #scale = "row",
+    annotation_col = annotation_df,
+    annotation_colors = annotation_pallete,
+    show_rownames = show_rownames,
+    border_color = NA,
+    treeheight_col = 30,
+    treeheight_row = 30,
+    drop_levels = TRUE,
+    cluster_cols = mat_cluster_cols,
+    cluster_rows = mat_cluster_rows,
+    ...
+    )
 }
 #' Plot Two Dimensional PCA
 #'
@@ -508,6 +563,9 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
     num <- nrow(expression_matrix)
   }
   mat <- expression_matrix[rowSums(expression_matrix) > 1,]
+  ## Scaling matrix by row
+  mat <- t(scale(t(mat),center = TRUE, scale = TRUE))
+
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
     dplyr::mutate( row_var = RowVar(.[2:length(.)])) %>%
@@ -568,6 +626,7 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
     ggplot2::xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
     ggplot2::ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
     ggplot2::coord_fixed() +
+    ggplot2::scale_color_viridis_d( direction = 1 ) +
     ggpubr::theme_pubr()
 }#' Volcano Plot
 #'
@@ -612,7 +671,7 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
     } else{
       lfc_cutoff <- df %>%
         dplyr::filter(sig_alpha == 1) %>%
-        .$log2FoldChange %>%
+        dplyr::pull(log2FoldChange) %>%
         abs() %>%
         max()
     }
@@ -631,12 +690,12 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
   #if( limits_x < 2 ) {
   #  limits_x <- 2
   #}
-
+  color_pallete <- viridis::viridis(3)
   p <- df %>%
     ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
     ggplot2::geom_point( ggplot2::aes( color = sig ) ) +
     ggplot2::scale_color_manual(
-      values=c(`0` = "black",`1` = "red",`2` = "red",`3` = "orange")
+      values=c(`0` = color_pallete[1],`1` = color_pallete[2],`2` = color_pallete[2],`3` = color_pallete[3])
     ) +
     ggrepel::geom_text_repel(
       data = dplyr::filter(df, sig %in% "3" ),
@@ -679,7 +738,7 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
 #'
 #' @export
 #'
-#gsea_res <- gsea_res_rio_2013; de_res <- de_res_rio_2013; gene_sets <- aaegdata::kegg_gene_sets;
+#gsea_res <- gsea_res_batch; de_res <- de_res_rio_2013; gene_sets <- aaegdata::kegg_gene_sets;
 #top_sets <- 10; enrichment <- FALSE; title = TRUE
 plot_gsea <- function(gsea_res, de_res, gene_sets,
                       top_sets = 10, enrichment = FALSE,
@@ -723,14 +782,110 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
       ggpubr::theme_pubr()
     #labs(title="Programmed Cell Death")
   } else {
-    topPathwaysUp <- gsea_res[ES > 0, ][utils::head(order(pval), n=top_sets), pathway]
-    topPathwaysDown <- gsea_res[ES < 0, ][utils::head(order(pval), n=top_sets), pathway]
-    topPathways <- c(topPathwaysUp, rev(topPathwaysDown))
-    fgsea::plotGseaTable(gene_sets[topPathways],
+    top_paths_up <- gsea_res %>%
+      dplyr::filter(ES > 0) %>%
+      dplyr::arrange(pvalue) %>%
+      utils::head(n = top_sets) %>%
+      dplyr::pull(1)
+    top_paths_down <- gsea_res %>%
+      dplyr::filter(ES < 0) %>%
+      dplyr::arrange(pvalue) %>%
+      utils::head(n = top_sets) %>%
+      dplyr::pull(1)
+    gsea_res <- gsea_res %>%
+      dplyr::rename(pval = pvalue)
+    top_paths <- c(top_paths_up, rev(top_paths_down))
+    fgsea::plotGseaTable(gene_sets[top_paths],
                          ranked_genes,
                          gsea_res,
                          colwidths = c(9, 3, 0.8, 1.2, 1.2)
     )
+  }
+}
+#' Plot Venn Diagram
+#'
+#' Plot Venn diagrams, from de_analysis or gsea_analysis results
+#' **Currentry, this version only plots venn diagram with four groups and just
+#' save files to file, don't plot directly**
+#'
+#' @param ... de_analysis or gsea_analysis data frames
+#'
+#' @param pvalue p-value cut-off for enrichment or differential consideration
+#'
+#' @param fdr logical, default = FALSE should adjusted pvalue be used
+#'               instead of pvalue
+#'
+#' @param names vector with names
+#'
+#' @param filename path to were the image should be saved
+#'
+#' @param width value to be used as the width of the plot, the venn diagram
+#'              will be plotted as a square with side of the smaller
+#'              value, between width and height
+#'
+#' @param height value to be used as the height of the plot, the venn diagram
+#'               will be plotted as a square of the smaller value, between
+#'               width and height. heigth cam be ommited and the plot will be
+#'               a square.
+#'
+#' @export
+#'
+#res_list <- list(de_res_rio_2013,de_res_rio_2015,de_res_bot_2014,de_res_neo_2014)
+#filename = "plots/deg_venn_diagram.pdf";width = 9; height = NULL
+plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
+                              filename, width = 9, height = NULL){
+  file_extension <- filename %>% stringr::str_extract("\\.[a-zA-Z]*$")
+  if(!isTRUE(identical(file_extension, ".pdf"))){
+    ## remove to introduce another extensions
+    stop("filename is not PDF")
+  }
+  res_list <- list(...)
+  if(is.null(names)){
+    ##
+  } else{
+    if( isTRUE(identical(length(res_list),length(names)))) {
+      names(res_list) <- names
+    } else{
+      stop("length of names should be the same of the objects passed to '...'")
+    }
+  }
+  file_path <- filename %>% stringr::str_replace(file_extension,"")
+  file_name_svg <- paste0(file_path,".svg")
+
+  pvalue_var <- quo(pvalue)
+  if(isTRUE(fdr)){
+    pvalue_var <- dplyr::quo(padj)
+  }
+  pvalue_cutoff <- pvalue
+  input_list <- res_list %>%
+    purrr::map(~{
+      .x %>%
+        dplyr::filter(!!pvalue_var < pvalue_cutoff) %>%
+        dplyr::pull(1)
+    })
+  names(input_list) <- names
+  output_height <- height
+  output_width <- width
+  if(is.null(height)){
+    output_height <- width
+  }
+  venn_width <- min(output_height,output_width)
+  VennDiagram::venn.diagram(
+    x = input_list,
+    filename = file_name_svg, imagetype = "svg",
+    height = venn_width, width = venn_width, col = "transparent",
+    fill = c("cornflowerblue","green","yellow","darkorchid1"),
+    label.col = c("orange", "white", "darkorchid4", "white", "white",
+                  "white", "white", "white", "darkblue", "white", "white", "white", "white",
+                  "darkgreen", "white"),
+    fontfamily = "serif", fontface = "bold",
+    cat.col = c("darkblue", "darkgreen", "orange", "darkorchid4"), cat.cex = 1.5,
+    cat.pos = 0, cat.dist = 0.07, cat.fontfamily = "serif", alpha = 0.50, cex = 1.5,
+    rotation.degree = 270, margin = 0.2
+  )
+  if(isTRUE(identical(file_extension, ".pdf"))) {
+    file_name_pdf <- paste0(file_path,".pdf")
+    rsvg::rsvg_pdf(svg = file_name_svg, file = file_name_pdf)
   }
 }
 
@@ -760,18 +915,23 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
   # Make a list from the ... arguments and plotlist
   plots <- c(list(...), plotlist)
 
-  numPlots = length(plots)
+  num_plots <- length(plots)
+
+
+## #' @param filename file path to save. Filetype is decided by the extension in the path.
+## #'                 Currently following formats are supported: only pdf.
+##                    filename = NA
 
   # If layout is NULL, then use 'cols' to determine layout
   if (is.null(layout)) {
     # Make the panel
     # ncol: Number of columns of plots
     # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
+    layout <- matrix(seq(1, cols * ceiling(num_plots/cols)),
+                     ncol = cols, nrow = ceiling(num_plots/cols))
   }
 
-  if (numPlots==1) {
+  if (num_plots == 1) {
     print(plots[[1]])
 
   } else {
@@ -780,7 +940,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
     grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
 
     # Make each plot, in the correct location
-    for (i in 1:numPlots) {
+    for (i in 1:num_plots) {
       # Get the i,j matrix positions of the regions that contain this subplot
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 

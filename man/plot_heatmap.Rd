@@ -4,7 +4,8 @@
 \alias{plot_heatmap}
 \title{Plot a Heatmap From Expression Data}
 \usage{
-plot_heatmap(tx, sample_table, color_by = NULL, num = NULL)
+plot_heatmap(tx, sample_table, color_by = NULL, num = NULL,
+  scale = "row", show_rownames = FALSE, ...)
 }
 \arguments{
 \item{tx}{txi object, matrix or data frame with trancript abundance}
@@ -14,6 +15,13 @@ plot_heatmap(tx, sample_table, color_by = NULL, num = NULL)
 \item{color_by}{variable from sample table to group samples in the plot}
 
 \item{num}{number of genes to plot, filtering by variance between samples}
+
+\item{scale}{logical, default = "row", normalize data by row, column or none}
+
+\item{show_rownames}{logical, default = FALSE}
+
+\item{...}{additional plot parameters, check pheatmap documentation for
+details}
 }
 \description{
 Plot a heatmap from expression data
