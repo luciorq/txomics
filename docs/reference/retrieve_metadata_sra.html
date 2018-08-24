@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot GSEA Enrichment Curve and Table — plot_gsea • txomics</title>
+<title>retrieve metadata from NCBI SRA — retrieve_metadata_sra • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,10 +30,9 @@
 
 
 
-<meta property="og:title" content="Plot GSEA Enrichment Curve and Table — plot_gsea" />
+<meta property="og:title" content="retrieve metadata from NCBI SRA — retrieve_metadata_sra" />
 
-<meta property="og:description" content="Plots enrichment table and individual enrichment graph for
-GSEA analysis results" />
+<meta property="og:description" content="retrieve metadata from NCBI SRA" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -115,70 +114,25 @@ GSEA analysis results" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot GSEA Enrichment Curve and Table</h1>
+    <h1>retrieve metadata from NCBI SRA</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>plot_gsea.Rd</code></div>
+    <div class="hidden name"><code>retrieve_metadata_sra.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Plots enrichment table and individual enrichment graph for
-GSEA analysis results</p>
+    <p>retrieve metadata from NCBI SRA</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_gsea</span>(<span class='no'>gsea_res</span>, <span class='no'>de_res</span>, <span class='no'>gene_sets</span>, <span class='kw'>top_sets</span> <span class='kw'>=</span> <span class='fl'>10</span>,
-  <span class='kw'>enrichment</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>title</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>gsea_res</th>
-      <td><p>result from gsea_analysis</p></td>
-    </tr>
-    <tr>
-      <th>de_res</th>
-      <td><p>results from de_analysis function</p></td>
-    </tr>
-    <tr>
-      <th>gene_sets</th>
-      <td><p>named list of genes named by gene set</p></td>
-    </tr>
-    <tr>
-      <th>top_sets</th>
-      <td><p>Number of sets to be plotted in the gsea table,
-the number of sets to be plotted is the double of the value
-of top_sets
-or a string for individual gene set for enrichment plot</p></td>
-    </tr>
-    <tr>
-      <th>enrichment</th>
-      <td><p>If set to TRUE, enrichment for individual
-gene set will be plotted.
-The default value is FALSE, for plotting GSEA table.</p></td>
-    </tr>
-    <tr>
-      <th>title</th>
-      <td><p>title label to be shown for enchment plot,
-should be a character vector of the text to be plotted
-or TRUE for using the .default = NULL, no text plotted.</p></td>
-    </tr>
-    </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>graphs for gsea table or gsea individual set</p>
-    
+    <pre class="usage"><span class='fu'>retrieve_metadata_sra</span>()</pre>
+        
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

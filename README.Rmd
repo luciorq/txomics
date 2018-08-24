@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 <!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
 <!-- [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/pkgdown)](https://cran.r-project.org/package=pkgdown) -->
 <!-- [![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/pkgdown/master.svg)](https://codecov.io/github/r-lib/pkgdown?branch=master) -->
+[![CRAN status](https://www.r-pkg.org/badges/version/txomics)](https://cran.r-project.org/package=txomics)
 
 ## Overview
 
