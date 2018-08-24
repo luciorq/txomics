@@ -25,7 +25,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #' retrieve metadata from NCBI SRA
 #'
-retrive_metadata_sra <- function() {
+retrieve_metadata_sra <- function() {
   ## This function retrieve metadata from sequencing run
   ## Using NCBI SRA
   ## INCOMPLETE

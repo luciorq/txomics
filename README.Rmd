@@ -16,6 +16,11 @@ knitr::opts_chunk$set(
 # txomics <img src="man/figures/txomics_logo.svg" align="right" height=140 />
 
 [![Travis build status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics)
+<!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/r-lib/pkgdown?branch=master&svg=true)](https://ci.appveyor.com/project/r-lib/pkgdown) -->
+<!-- [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) -->
+<!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
+<!-- [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/pkgdown)](https://cran.r-project.org/package=pkgdown) -->
+<!-- [![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/pkgdown/master.svg)](https://codecov.io/github/r-lib/pkgdown?branch=master) -->
 
 ## Overview
 
@@ -41,7 +46,7 @@ devtools::install_github("luciorq/txomics")
 
 ## Analysis conventions
 
-* A `tibble` data frame is the major data structure to use.
+* A `tibble` data frame is the major data structure that is used, allowing easy customization.
 * `txomics` is pipe-friendly and re-exports `%>%` for use. 
 
 <!--

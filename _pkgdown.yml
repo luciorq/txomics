@@ -1,0 +1,19 @@
+development:
+  mode: unreleased
+
+reference:
+  - title: Analysis
+    desc:  Functional analysis of RNA sequencing experiments.
+    contents:
+    - ends_with("_analysis")
+    - salmon_libtype
+  - title: Visualization
+    contents:
+    - starts_with("plot_")
+    - multiplot
+  - title: Cleaning data
+    desc: Import and clean data before analysis
+    contents:
+    - import_tx
+    - filter_txi
+    - starts_with("retrieve_")
