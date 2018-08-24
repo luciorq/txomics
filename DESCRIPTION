@@ -23,11 +23,14 @@ Imports:
     ggplot2,
     ggrepel,
     ggpubr,
+    viridis,
     tximport,
     DESeq2,
     fgsea,
     pheatmap,
-    dendsort
+    dendsort,
+    rsvg,
+    VennDiagram
 RoxygenNote: 6.1.0
 URL: https://github.com/luciorq/txomics
 BugReports: https://github.com/luciorq/txomics/issues

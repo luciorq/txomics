@@ -306,7 +306,11 @@ de_analysis <- function(txi, sample_table, contrast_var,
 #de_res <- de_res_rio2013
 #gene_sets <- aaegdata::kegg_gene_sets
 gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
-  de_res$log2FoldChange[is.na(de_res$log2FoldChange)] <- 0
+  #de_res$log2FoldChange[is.na(de_res$log2FoldChange)] <- 0
+  de_res %>%
+    dplyr::mutate(
+      log2FoldChange = dplyr::if_else(is.na(log2FoldChange), 0, log2FoldChange )
+    )
   sorted_res <- de_res %>%
     dplyr::select(gene, log2FoldChange) %>%
     dplyr::arrange(log2FoldChange)
@@ -427,7 +431,7 @@ retrieve_deg <- function(de_res, alpha = 0.05 ,fdr = FALSE){
 plot_heatmap <- function(tx, sample_table, color_by = NULL,
                          num = NULL, scale = "row",
                          show_rownames = FALSE, ...) {
-  RowVar <- function(x, ...) {
+  calc_var_by_row <- function(x, ...) {
     base::rowSums((x - base::rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
   }
   if ( is.list(tx) ) {
@@ -449,7 +453,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   }
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = RowVar(.[2:length(.)])) %>%
+    dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var) %>%
     utils::head(num) %>%
     dplyr::select( -row_var)
@@ -498,7 +502,8 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 
   ## Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
   draw_colnames_45 <- function (coln, gaps, ...) {
-    coord <- pheatmap:::find_coordinates(length(coln), gaps)
+    find_coordinates_temp <- utils::getFromNamespace("find_coordinates", "pheatmap")
+    coord <- find_coordinates_temp(length(coln), gaps)
     x     <- coord$coord - 0.5 * coord$size
     res   <- grid::textGrob(
       coln, x = x, y = grid::unit(1, "npc") - grid::unit(3,"bigpts"),
@@ -506,7 +511,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     )
     return(res)
   }
-  assignInNamespace(
+  utils::assignInNamespace(
     x = "draw_colnames",
     value = "draw_colnames_45",
     ns = asNamespace("pheatmap")
@@ -551,7 +556,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 #color_by = c("condition","population"); num = 500
 plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
 
-  RowVar <- function(x, ...) {
+  calc_var_by_row <- function(x, ...) {
     rowSums((x - rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
   }
   if(is.list(tx)) {
@@ -568,7 +573,7 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
 
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = RowVar(.[2:length(.)])) %>%
+    dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var) %>%
     utils::head(num) %>%
     dplyr::select( -row_var)
@@ -590,7 +595,7 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
     PC1 = pc_1
   )
   pc_2 <- pca$x[, 2]
-  pc_2_df <- data_frame(
+  pc_2_df <- dplyr::data_frame(
     sample = names(pc_2),
     PC2 = pc_2
   )
@@ -852,7 +857,7 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
   file_path <- filename %>% stringr::str_replace(file_extension,"")
   file_name_svg <- paste0(file_path,".svg")
 
-  pvalue_var <- quo(pvalue)
+  pvalue_var <- dplyr::quo(pvalue)
   if(isTRUE(fdr)){
     pvalue_var <- dplyr::quo(padj)
   }
