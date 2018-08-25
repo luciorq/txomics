@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-txomics <img src="man/figures/txomics_logo.svg" align="right" height=140 />
-===========================================================================
+txomics <img src="man/figures/logo.png" align="right" height=140 />
+===================================================================
 
 [![Travis build status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/luciorq/txomics?branch=master&svg=true)](https://ci.appveyor.com/project/luciorq/txomics) <!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/r-lib/pkgdown?branch=master&svg=true)](https://ci.appveyor.com/project/r-lib/pkgdown) --> <!-- [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) --> <!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) --> <!-- [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/pkgdown)](https://cran.r-project.org/package=pkgdown) --> <!-- [![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/pkgdown/master.svg)](https://codecov.io/github/r-lib/pkgdown?branch=master) --> [![CRAN status](https://www.r-pkg.org/badges/version/txomics)](https://cran.r-project.org/package=txomics) [![Coverage status](https://codecov.io/gh/luciorq/txomics/branch/master/graph/badge.svg)](https://codecov.io/github/luciorq/txomics?branch=master)
 
