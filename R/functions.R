@@ -1,15 +1,6 @@
-#' \code{txomics} package
-#'
-#' Functional Analysis and Visualization of Transcriptomic Data
-#'
-#' See the README on
-#' \href{https://github.com/luciorq/txomics#readme}{GitHub}
-#'
-#' @docType package
-#' @name txomics
+#' @keywords internal
 #' @importFrom dplyr %>%
-#'
-NULL
+"_PACKAGE"
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
 ## reference: https://github.com/jennybc/googlesheets/blob/master/R/googlesheets.R
@@ -43,13 +34,16 @@ retrieve_metadata_sra <- function() {
 #'
 #' @return A \code{txi} object containing
 #'
+#' @examples
+#' \dontrun{
+#' # Example with path to folder input
+#' imported_transcripts <- import_tx("data/salmon/res_quants/")
+#' }
+#'
 #' @export
 #'
 import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
   ## Function used to import transcripts abundance data
-  #library(tidyverse)
-  #library(tximport)
-  #message("using tximport")
   files <- file.path(dir, list.files(dir), "quant.sf")
   if (!all(file.exists(files))) {
     stop("Not all files exists")
@@ -57,8 +51,9 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
   }
   names(files) <- list.files(dir) %>%
     stringr::str_remove("_quant$")
-  tx_vector <- readr::read_delim(files[1],
-                                 "\t", escape_double = FALSE, trim_ws = TRUE) %>%
+  tx_vector <- readr::read_delim(
+      files[1],"\t", escape_double = FALSE, trim_ws = TRUE
+    ) %>%
     dplyr::pull(Name)
   if(names == "vectorbase"){
     gene_vector <- tx_vector %>% stringr::str_remove("-R.*")
@@ -454,8 +449,20 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
     dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
-    dplyr::arrange(-row_var) %>%
-    utils::head(num) %>%
+    dplyr::arrange(-row_var)
+  if( isTRUE(num > 0) ) {
+    filtered_mat <- filtered_mat %>%
+      utils::head(num)
+  }
+  if( isTRUE(num < 0) ) {
+    num <- abs(num)
+    filtered_mat <- filtered_mat %>%
+      utils::tail(num)
+  }
+  if( isTRUE(num == 0) ) {
+    stop("Number of genes can't be zero.")
+  }
+  filtered_mat <- filtered_mat %>%
     dplyr::select( -row_var)
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
@@ -500,17 +507,6 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   mat_cluster_cols <- sort_hclust(mat_cluster_cols)
   mat_cluster_rows <- sort_hclust(stats::hclust(stats::dist(mat)))
 
-  ## Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
-  draw_colnames_45 <- function (coln, gaps, ...) {
-    find_coordinates_temp <- utils::getFromNamespace("find_coordinates", "pheatmap")
-    coord <- find_coordinates_temp(length(coln), gaps)
-    x     <- coord$coord - 0.5 * coord$size
-    res   <- grid::textGrob(
-      coln, x = x, y = grid::unit(1, "npc") - grid::unit(3,"bigpts"),
-      vjust = 0.75, hjust = 1, rot = 45, gp = grid::gpar(...)
-    )
-    return(res)
-  }
   utils::assignInNamespace(
     x = "draw_colnames",
     value = "draw_colnames_45",
@@ -519,7 +515,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 
   pheatmap::pheatmap(
     mat = mat,
-    color = viridis::viridis(100, direction = -1),
+    color = viridis::viridis(100, direction = 1),
     #scale = "row",
     annotation_col = annotation_df,
     annotation_colors = annotation_pallete,
@@ -574,10 +570,21 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
     dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
-    dplyr::arrange(-row_var) %>%
-    utils::head(num) %>%
+    dplyr::arrange(-row_var)
+  if( isTRUE(num > 0) ) {
+    filtered_mat <- filtered_mat %>%
+      utils::head(num)
+  }
+  if( isTRUE(num < 0) ) {
+    num <- abs(num)
+    filtered_mat <- filtered_mat %>%
+      utils::tail(num)
+  }
+  if( isTRUE(num == 0) ) {
+    stop("Number of genes can't be zero.")
+  }
+  filtered_mat <- filtered_mat %>%
     dplyr::select( -row_var)
-
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
     as.matrix()
@@ -953,4 +960,48 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
                                             layout.pos.col = matchidx$col))
     }
   }
+}
+
+###############################################
+##                                            #
+##              Aux Functions                 #
+##                                            #
+###############################################
+#' aux for heatmap
+#'
+#' aux for heatmap
+#' @export
+draw_colnames_45 <- function (coln, gaps, ...) {
+  ## Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
+  find_coordinates_temp <- utils::getFromNamespace("find_coordinates", "pheatmap")
+  coord <- find_coordinates_temp(length(coln), gaps)
+  x     <- coord$coord - 0.5 * coord$size
+  res   <- grid::textGrob(
+    coln, x = x, y = grid::unit(1, "npc") - grid::unit(3,"bigpts"),
+    vjust = 0.75, hjust = 1, rot = 45, gp = grid::gpar(...)
+  )
+  return(res)
+}
+
+#' @export
+retrieve_deg_table <- function(..., pvalue = 0.05, sample_names){
+  pvalue_cutoff <- pvalue
+  deg_table_population <- list(...) %>%
+    purrr::map_df(
+      ~{temp_res <- .x
+      up_deg <- temp_res %>%
+        filter(pvalue < pvalue_cutoff) %>%
+        filter(log2FoldChange > 0) %>%
+        nrow()
+      down_deg <- temp_res %>%
+        filter(pvalue < pvalue_cutoff) %>%
+        filter(log2FoldChange < 0) %>%
+        nrow()
+      data_frame(up = up_deg,
+                 down = down_deg,
+                 total = up_deg + down_deg)
+      })
+  deg_table_population %>%
+    dplyr::mutate(population = sample_names ) %>%
+    dplyr::select(population, up, down, total )
 }

@@ -19,3 +19,10 @@ A \code{txi} object containing
 \description{
 Function used to import transcripts count and abundance data
 }
+\examples{
+\dontrun{
+# Example with path to folder input
+imported_transcripts <- import_tx("data/salmon/res_quants/")
+}
+
+}
