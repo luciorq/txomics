@@ -3,7 +3,8 @@
 * local Debian GNU/Linux 9.4 (stretch) R 3.5.0 
 <!-- * local OS X install, R 3.5.0 -->
 * OS X (on travis-ci) R 3.4.0 and R 3.5.0
-* ubuntu 14.04 (on travis-ci), R 3.4.0 and R 3.5.0
+* Ubuntu 14.04 (on travis-ci), R 3.4.0 and R 3.5.0
+* Windows (on appveyor ) R 3.5.0
 <!-- * win-builder (devel and release) -->
 
 ## R CMD check results

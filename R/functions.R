@@ -54,7 +54,7 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
   tx_vector <- readr::read_delim(
       files[1],"\t", escape_double = FALSE, trim_ws = TRUE
     ) %>%
-    dplyr::pull(Name)
+    dplyr::pull(`Name`)
   if(names == "vectorbase"){
     gene_vector <- tx_vector %>% stringr::str_remove("-R.*")
     tx2gene <- data.frame("TXNAME" = tx_vector, "GENEID" = gene_vector)
@@ -83,7 +83,7 @@ salmon_libtype <- function(dir) {
     ## Function to retrieve Salmon library from file
     lib_type <- paste0(dir,"/",lib,"/lib_format_counts.json") %>%
       jsonlite::read_json() %>%
-      dplyr::pull(expected_format)
+      dplyr::pull(`expected_format`)
     dplyr::data_frame(lib, lib_type)
   }
   files <- list.files(dir)
@@ -262,18 +262,18 @@ de_analysis <- function(tx, sample_table, contrast_var,
 
     res <- tx$abundance %>%
       dplyr::as_tibble(rownames = "gene") %>%
-      dplyr::mutate(FC = !!as.name(numerator_name)/!!as.name(denominator_name)) %>%
-      dplyr::arrange( -FC ) %>%
-      dplyr::mutate(log2FoldChange = log2(FC)) %>%
+      dplyr::mutate(`FC` = !!as.name(numerator_name)/!!as.name(denominator_name)) %>%
+      dplyr::arrange( -`FC` ) %>%
+      dplyr::mutate(`log2FoldChange` = log2(`FC`)) %>%
       dplyr::mutate(
-        log2FoldChange = dplyr::if_else(is.finite(log2FoldChange), log2FoldChange,NA_real_)
+        log2FoldChange = dplyr::if_else(is.finite(`log2FoldChange`), `log2FoldChange`,NA_real_)
       ) %>%
       dplyr::mutate(pvalue = NA_real_) %>%
       dplyr::mutate(padj = NA_real_) %>%
       dplyr::select( -(!!numerator_name)) %>%
       dplyr::select(-(!!denominator_name)) %>%
-      dplyr::select( -FC ) %>%
-      dplyr::arrange(gene)
+      dplyr::select( -`FC` ) %>%
+      dplyr::arrange(`gene`)
   }
   #cat(summary(res))
   if(!isTRUE("data.frame" %in% class(res))){
@@ -490,10 +490,10 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     annotation_pallete <- NA
   } else {
     annotation_df <- sample_table %>%
-      dplyr::select( sample,!!color_by )
-    row_names <- annotation_df$sample
+      dplyr::select( 1,!!color_by )
+    row_names <- annotation_df %>% dplyr::pull(1)
     annotation_df <- annotation_df %>%
-      dplyr::select( -sample ) %>%
+      dplyr::select( -1 ) %>%
       as.data.frame()
     rownames(annotation_df) <-  row_names
     ## Generate Annotation discrete color pallette
