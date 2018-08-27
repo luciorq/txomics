@@ -4,14 +4,14 @@
 \alias{de_analysis}
 \title{Perform Differential Expression Analysis}
 \usage{
-de_analysis(txi, sample_table, contrast_var, numerator, denominator,
+de_analysis(tx, sample_table, contrast_var, numerator, denominator,
   batch_var = NULL, beta_prior = TRUE, force_rep = FALSE)
 }
 \arguments{
-\item{txi}{tximport object containing reads counts}
+\item{tx}{imported transcripts object containing reads counts}
 
-\item{sample_table}{table containing experimental design
-and sample info}
+\item{sample_table}{metadata data frame, containing description
+of each sample and experimental design}
 
 \item{contrast_var}{column name from the sample_table}
 

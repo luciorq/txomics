@@ -15,5 +15,5 @@ reference:
     desc: Import and clean data before analysis
     contents:
     - import_tx
-    - filter_txi
+    - filter_tx
     - starts_with("retrieve_")

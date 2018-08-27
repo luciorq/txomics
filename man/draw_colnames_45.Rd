@@ -2,10 +2,17 @@
 % Please edit documentation in R/functions.R
 \name{draw_colnames_45}
 \alias{draw_colnames_45}
-\title{aux for heatmap}
+\title{plot aux function}
 \usage{
 draw_colnames_45(coln, gaps, ...)
 }
+\arguments{
+\item{coln}{number of columns}
+
+\item{gaps}{gaps}
+
+\item{...}{additional parameters}
+}
 \description{
-aux for heatmap
+Aux function for rotating plot_heatmap x axis
 }

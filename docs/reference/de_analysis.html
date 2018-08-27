@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.5</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.6</span>
       </span>
     </div>
 
@@ -125,20 +125,20 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>de_analysis</span>(<span class='no'>txi</span>, <span class='no'>sample_table</span>, <span class='no'>contrast_var</span>, <span class='no'>numerator</span>, <span class='no'>denominator</span>,
+    <pre class="usage"><span class='fu'>de_analysis</span>(<span class='no'>tx</span>, <span class='no'>sample_table</span>, <span class='no'>contrast_var</span>, <span class='no'>numerator</span>, <span class='no'>denominator</span>,
   <span class='kw'>batch_var</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>beta_prior</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>force_rep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>txi</th>
-      <td><p>tximport object containing reads counts</p></td>
+      <th>tx</th>
+      <td><p>imported transcripts object containing reads counts</p></td>
     </tr>
     <tr>
       <th>sample_table</th>
-      <td><p>table containing experimental design
-and sample info</p></td>
+      <td><p>metadata data frame, containing description
+of each sample and experimental design</p></td>
     </tr>
     <tr>
       <th>contrast_var</th>

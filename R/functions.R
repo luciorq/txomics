@@ -61,8 +61,8 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
   }else{
     tx2gene <- data.frame("TXNAME" = tx_vector, "GENEID" = tx_vector)
   }
-  txi <- tximport::tximport(files, type = source, tx2gene = tx2gene)
-  txi
+  tx <- tximport::tximport(files, type = source, tx2gene = tx2gene)
+  tx
 }
 
 #' Infer Library Construction Type
@@ -130,9 +130,10 @@ retrieve_mapping_rate <- function( dir ) {
 #' in a \code{txi} format
 #' based on metadata column and levels
 #'
-#' @param txi txi object
+#' @param tx txi object
 #'
-#' @param sample_table metadata data frame
+#' @param sample_table metadata data frame, containing description
+#'                     of each sample and experimental design
 #'
 #' @param var_column variable to filter the input
 #'
@@ -142,17 +143,17 @@ retrieve_mapping_rate <- function( dir ) {
 #'
 #' @export
 #'
-#txi <- imported_transcripts
+#tx <- imported_transcripts
 #sample_table <- metadata_df
 #var_column <- "population"
 #var_levels <- c("Botucatu2014", "Rio2013")
-filter_txi <- function(txi, sample_table, var_column = NULL, var_levels = NULL) {
+filter_tx <- function(tx, sample_table, var_column = NULL, var_levels = NULL) {
   first_column <- colnames(sample_table)[1]
   if(!is.null(var_levels)){
     extracted_cols <- sample_table %>%
       dplyr::filter((!!as.name(var_column)) %in% var_levels) %>%
       dplyr::select(1) %>%
-      dplyr::filter((!!as.name(first_column)) %in% colnames(txi$counts) ) %>%
+      dplyr::filter((!!as.name(first_column)) %in% colnames(tx$counts) ) %>%
       unlist()
   } else{
     extracted_cols <- sample_table %>%
@@ -160,20 +161,20 @@ filter_txi <- function(txi, sample_table, var_column = NULL, var_levels = NULL) 
       unlist()
   }
 
-  txi$counts <- txi$counts[, extracted_cols]
-  txi$abundance <- txi$abundance[, extracted_cols]
-  txi$length <- txi$length[, extracted_cols]
-  txi
+  tx$counts <- tx$counts[, extracted_cols]
+  tx$abundance <- tx$abundance[, extracted_cols]
+  tx$length <- tx$length[, extracted_cols]
+  tx
 }
 
 #' Perform Differential Expression Analysis
 #'
 #' Run DESeq2 pipeline for differentially expressed genes.
 #'
-#' @param txi tximport object containing reads counts
+#' @param tx imported transcripts object containing reads counts
 #'
-#' @param sample_table table containing experimental design
-#'                     and sample info
+#' @param sample_table metadata data frame, containing description
+#'                     of each sample and experimental design
 #'
 #' @param contrast_var column name from the sample_table
 #'
@@ -193,14 +194,14 @@ filter_txi <- function(txi, sample_table, var_column = NULL, var_levels = NULL) 
 #'
 #' @export
 #'
-#txi <- tx_rio_2013; sample_table = metadata_df = samples_metadata
+#tx <- tx_rio_2013; sample_table = metadata_df = samples_metadata
 #contrast_var <- "condition"; numerator <- "resistant"; denominator <- "susceptible"
-de_analysis <- function(txi, sample_table, contrast_var,
+de_analysis <- function(tx, sample_table, contrast_var,
                         numerator, denominator,
                         batch_var = NULL,
                         beta_prior = TRUE,
                         force_rep = FALSE){
-  lib_names <- colnames( txi$counts )
+  lib_names <- colnames( tx$counts )
   var_column <- colnames(sample_table[1])
   sample_table <- sample_table %>%
     dplyr::filter( !!as.name(var_column) %in% lib_names )
@@ -210,7 +211,7 @@ de_analysis <- function(txi, sample_table, contrast_var,
   } else{
     design_formula <- as.formula(paste0("~",batch_var," + ",contrast_var))
   }
-  dds1 <- DESeq2::DESeqDataSetFromTximport(txi, sample_table, design = design_formula)
+  dds1 <- DESeq2::DESeqDataSetFromTximport(tx, sample_table, design = design_formula)
 
   number_of_numerator_samples <- sample_table %>%
     dplyr::filter(!!as.name(contrast_var) == numerator) %>%
@@ -251,7 +252,7 @@ de_analysis <- function(txi, sample_table, contrast_var,
                                type="apeglm")
     }
   } else {
-    #txi_row_names <- base::rownames(txi$abundance)
+    #tx_row_names <- base::rownames(tx$abundance)
     numerator_name <- sample_table %>%
       dplyr::filter(!!as.name(contrast_var) == numerator)
     numerator_name <- as.character(numerator_name[,1])
@@ -259,12 +260,14 @@ de_analysis <- function(txi, sample_table, contrast_var,
       dplyr::filter(!!as.name(contrast_var) == denominator)
     denominator_name <- as.character(denominator_name[,1])
 
-    res <- txi$abundance %>%
+    res <- tx$abundance %>%
       dplyr::as_tibble(rownames = "gene") %>%
       dplyr::mutate(FC = !!as.name(numerator_name)/!!as.name(denominator_name)) %>%
       dplyr::arrange( -FC ) %>%
       dplyr::mutate(log2FoldChange = log2(FC)) %>%
-      dplyr::mutate(log2FoldChange = dplyr::if_else(is.finite(log2FoldChange), log2FoldChange,NA_real_)) %>%
+      dplyr::mutate(
+        log2FoldChange = dplyr::if_else(is.finite(log2FoldChange), log2FoldChange,NA_real_)
+      ) %>%
       dplyr::mutate(pvalue = NA_real_) %>%
       dplyr::mutate(padj = NA_real_) %>%
       dplyr::select( -(!!numerator_name)) %>%
@@ -368,16 +371,18 @@ le_analysis <- function(gsea_res, set){
 #'
 #' @param de_res de_analysis result
 #'
-#' @param alpha default = 0.05
-#'
-#' @param fdr logical, should consider False discovery rate
-#'            default = FALSE
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
 #'
 #' @return a \code{vector} of gene names
 #'
 #' @export
 #'
-retrieve_deg <- function(de_res, alpha = 0.05 ,fdr = FALSE){
+retrieve_deg <- function(de_res, pvalue = 0.05 ,fdr = FALSE){
+  alpha <- pvalue
   if (!isTRUE("data.frame" %in% class(de_res))) {
     de_res <- de_res %>%
       base::as.data.frame() %>%
@@ -406,7 +411,8 @@ retrieve_deg <- function(de_res, alpha = 0.05 ,fdr = FALSE){
 #'
 #' @param tx txi object, matrix or data frame with trancript abundance
 #'
-#' @param sample_table metadata data frame
+#' @param sample_table metadata data frame, containing description
+#'                     of each sample and experimental design
 #'
 #' @param color_by variable from sample table to group samples in the plot
 #'
@@ -430,14 +436,25 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     base::rowSums((x - base::rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
   }
   if ( is.list(tx) ) {
-    expression_matrix <- tx$abundance
+    if( !dplyr::is.tbl(tx) ){
+      expression_matrix <- tx$abundance
+    } else {
+      expression_matrix <- tx
+    }
   } else {
     expression_matrix <- tx
   }
   if ( is.null(num) ) {
     num <- nrow(expression_matrix)
   }
-  mat <- expression_matrix[rowSums(expression_matrix) > 1,]
+  if(!is.matrix(expression_matrix)){
+    if(!all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix)))))){
+      temp_mat <- as.matrix(expression_matrix[,2:length(expression_matrix)])
+      rownames(temp_mat) <- expression_matrix %>% dplyr::pull(1)
+      expression_matrix <- temp_mat
+    }
+  }
+  mat <- expression_matrix[base::rowSums(expression_matrix) > 1,]
   ## Scaling matrix
   if(scale == "row"){
     mat <- t(scale(t(mat),center = TRUE, scale = TRUE))
@@ -536,7 +553,8 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 #'
 #' @param tx txi object, matrix or data frame with trancript abundance
 #'
-#' @param sample_table metadata data frame
+#' @param sample_table metadata data frame, containing description
+#'                     of each sample and experimental design
 #'
 #' @param color_by variable from sample table to group samples in the plot
 #'
@@ -646,19 +664,20 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
 #'
 #' @param de_res de_analysis result
 #'
-#' @param alpha default = 0.05
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
 #'
 #' @param lfc_threshold absolute value of log2FoldChange to limit the significance
 #'
-#' @param fdr logical, should consider False discovery rate
-#'            default = FALSE
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
 #'
 #' @return A \code{ggplot} object
 #'
 #' @export
 #'
-#de_res <- de_res_rio_2013; alpha <- 0.05;fdr <- TRUE; lfc_threshold <- 0.9
-plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE ) {
+#de_res <- de_res_batch; pvalue <- 0.05;fdr <- TRUE; lfc_threshold <- 0.9
+plot_volcano <- function(de_res, pvalue  = 0.05, lfc_threshold = NULL, fdr = FALSE ) {
   ##scatter_plot <- function(data, x, y) {
   ##  x <- enquo(x)
   ##  y <- enquo(y)
@@ -666,6 +685,11 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
   ##  ggplot(data) + geom_point(aes(!!x, !!y))
   ##}
   ##scatter_plot(mtcars, disp, drat)
+  alpha <- pvalue
+  pvalue_var <- dplyr::quo(pvalue)
+  if(isTRUE(fdr)){
+    pvalue_var <- dplyr::quo(padj)
+  }
   df <- de_res %>%
     dplyr::select(gene, log2FoldChange, pvalue, padj)
   if (isTRUE(fdr)){
@@ -699,10 +723,16 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
   df$sig <- factor(df$sig, levels = c("0", "1", "2", "3") )
 
   limits_x <- max(abs(df$log2FoldChange)) * 1.2
-  #if( limits_x < 2 ) {
-  #  limits_x <- 2
-  #}
+
   color_pallete <- viridis::viridis(3)
+
+  pvalue_line <- alpha
+  if(isTRUE(fdr)){
+    pvalue_line <- df %>%
+      dplyr::filter(padj < alpha) %>%
+      dplyr::pull(pvalue) %>%
+      base::max()
+  }
   p <- df %>%
     ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
     ggplot2::geom_point( ggplot2::aes( color = sig ) ) +
@@ -713,7 +743,7 @@ plot_volcano <- function(de_res, alpha = 0.05, lfc_threshold = NULL, fdr = FALSE
       data = dplyr::filter(df, sig %in% "3" ),
       ggplot2::aes(label = gene)
     ) +
-    ggplot2::geom_hline(yintercept = -log10(alpha), alpha = 0.5 ) +
+    ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5 ) +
     ggplot2::geom_vline(xintercept = lfc_cutoff, alpha = 0.5 ) +
     ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5 ) +
     ggplot2::expand_limits(x = c(-limits_x,limits_x)) +
@@ -822,12 +852,13 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
 #'
 #' @param ... de_analysis or gsea_analysis data frames
 #'
-#' @param pvalue p-value cut-off for enrichment or differential consideration
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
 #'
-#' @param fdr logical, default = FALSE should adjusted pvalue be used
-#'               instead of pvalue
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
 #'
-#' @param names vector with names
+#' @param names vector with names to be used for each group
 #'
 #' @param filename path to were the image should be saved
 #'
@@ -900,7 +931,112 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     rsvg::rsvg_pdf(svg = file_name_svg, file = file_name_pdf)
   }
 }
+#' Plot a Heatmap From gsea_analysis
+#'
+#' Plot a heatmap of enriched gene sets from gsea_analysis
+#'
+#' @param ... list of gsea_analisys results
+#'
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#'
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
+#'
+#' @param names vector with names to be used at the x axis label
+#'
+#' @param occurrence Number of samples that the gene set
+#'                    needs to be enriched
+#'
+#' @export
+#'
+#gsea_res_list <- list(gsea_go_bot_2014,gsea_go_neo_2014,gsea_go_rio_2013,gsea_go_rio_2015)
+# pvalue = 0.2; fdr = TRUE; names = c("Botucatu 2014","Neopolis 2014","Rio 2013","Rio 2015")
+#  occurrence = NULL
+plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
+                              occurrence = NULL ) {
+  gsea_res_list <- list(...)
+  pvalue_cutoff <- pvalue
+  sample_names <- names
+  pvalue_var <- dplyr::quo(pvalue)
+  if(isTRUE(fdr)){
+    pvalue_var <- dplyr::quo(padj)
+  }
+  if(is.null(occurrence)){
+    occurrence <- length(gsea_res_list)
+  }
+  enriched_gene_sets <- gsea_res_list %>%
+    purrr::map(~{
+      .x %>%
+        dplyr::filter( !!pvalue_var < pvalue_cutoff) %>%
+        dplyr::pull(1)
+    })
+  enriched_vector <- enriched_gene_sets %>%
+    unlist() %>%
+    table()
+  top_sets <- dplyr::data_frame(
+    gene_sets = names(enriched_vector),
+    occurrency = enriched_vector
+  ) %>%
+    dplyr::arrange(-occurrency)
 
+  top_sets <- top_sets %>%
+    dplyr::filter(occurrency >= occurrence ) %>%
+    dplyr::pull(1)
+
+  gene_set_var <- gsea_res_list[[1]] %>% colnames()
+  gene_set_var <- gene_set_var[1]
+  gene_set_var <- dplyr::sym(gene_set_var)
+
+  pvalue_df <- gsea_res_list %>%
+    purrr::map2_df(sample_names,~{
+      .x %>%
+        dplyr::filter( !!gene_set_var %in% top_sets ) %>%
+        dplyr::select(1 , !!pvalue_var ) %>%
+        dplyr::mutate(sample_name = .y)
+    })
+
+  mat_df <- pvalue_df %>%
+    tidyr::spread(sample_name, !!pvalue_var, -1)
+  mat_rownames <- mat_df %>%
+    dplyr::select(1) %>%
+    dplyr::pull()
+  mat <- mat_df %>%
+    dplyr::select(-1) %>%
+    base::as.matrix()
+  rownames(mat) <- mat_rownames
+  mat <- mat %>%
+    base::log10() %>%
+    base::abs()
+  sort_hclust <- function(...) {
+    stats::as.hclust(dendsort::dendsort(stats::as.dendrogram(...)))
+  }
+  mat_cluster_cols <- stats::hclust(stats::dist(t(mat)))
+  mat_cluster_cols <- sort_hclust(mat_cluster_cols)
+  mat_cluster_rows <- sort_hclust(stats::hclust(stats::dist(mat)))
+  utils::assignInNamespace(
+    x = "draw_colnames",
+    value = "draw_colnames_45",
+    ns = asNamespace("pheatmap")
+  )
+
+  ## Because -log10(0.001) = 3 and
+  ##if p-value is smaller than 0.01, it's already much significant
+  p_value_max <- 3
+  #p_value_max <- max(mat)
+
+  pheatmap::pheatmap(
+    mat = mat,
+    color = viridis::viridis(100, direction = 1),
+    show_rownames = TRUE,
+    border_color = NA,
+    treeheight_col = 30,
+    treeheight_row = 30,
+    cluster_cols = mat_cluster_cols,
+    cluster_rows = mat_cluster_rows,
+    breaks = seq( 0, p_value_max, (p_value_max/100) )
+  )
+}
 #' Multiple Plot
 #'
 #' ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -967,9 +1103,30 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 ##              Aux Functions                 #
 ##                                            #
 ###############################################
-#' aux for heatmap
+#' Pipe, as in Pipeline
 #'
-#' aux for heatmap
+#' Exported from dplyr, use \code{\%>\%} to turn
+#' function composition into a series of imperative statements.
+#'
+#' @importFrom dplyr %>%
+#' @name %>%
+#' @rdname pipe
+#' @export
+#' @param lhs,rhs An object and a function to apply to it
+#' @examples
+#' # Instead of
+#' abs(nrow(head(mtcars)))
+#' # you can write
+#' mtcars %>% head() %>% nrow() %>% abs()
+NULL
+
+#' plot aux function
+#'
+#' Aux function for rotating plot_heatmap x axis
+#'
+#' @param coln number of columns
+#' @param gaps gaps
+#' @param ... additional parameters
 #' @export
 draw_colnames_45 <- function (coln, gaps, ...) {
   ## Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
@@ -983,18 +1140,46 @@ draw_colnames_45 <- function (coln, gaps, ...) {
   return(res)
 }
 
+#' Differential Expression results
+#'
+#' Filter upregulated and downregulated genes from
+#' Differential expression analysis in a table
+#'
+#' @param ... de_analysis or gsea_analysis results data frames
+#'
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#'
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
+#'
+#' @param names vector with names to be used for each group
+#'
 #' @export
-retrieve_deg_table <- function(..., pvalue = 0.05, sample_names){
+retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
+  pvalue_var <- dplyr::quo(pvalue)
+  if(isTRUE(fdr)){
+    pvalue_var <- dplyr::quo(padj)
+  }
   pvalue_cutoff <- pvalue
-  deg_table_population <- list(...) %>%
+  if(is.list(...)){
+    deg_table_population <- ...
+  }
+  else{
+    deg_table_population <- list(...)
+  }
+  if(!is.null(base::names(deg_table_population))){
+    names <- base::names(deg_table_population)
+  }
+  deg_table_population <- deg_table_population  %>%
     purrr::map_df(
       ~{temp_res <- .x
       up_deg <- temp_res %>%
-        filter(pvalue < pvalue_cutoff) %>%
+        filter(!!pvalue_var < pvalue_cutoff) %>%
         filter(log2FoldChange > 0) %>%
         nrow()
       down_deg <- temp_res %>%
-        filter(pvalue < pvalue_cutoff) %>%
+        filter(!!pvalue_var < pvalue_cutoff) %>%
         filter(log2FoldChange < 0) %>%
         nrow()
       data_frame(up = up_deg,
@@ -1002,6 +1187,6 @@ retrieve_deg_table <- function(..., pvalue = 0.05, sample_names){
                  total = up_deg + down_deg)
       })
   deg_table_population %>%
-    dplyr::mutate(population = sample_names ) %>%
+    dplyr::mutate(population = names ) %>%
     dplyr::select(population, up, down, total )
 }

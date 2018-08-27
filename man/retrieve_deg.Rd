@@ -4,15 +4,16 @@
 \alias{retrieve_deg}
 \title{Retrieve Differentially Expressed Genes}
 \usage{
-retrieve_deg(de_res, alpha = 0.05, fdr = FALSE)
+retrieve_deg(de_res, pvalue = 0.05, fdr = FALSE)
 }
 \arguments{
 \item{de_res}{de_analysis result}
 
-\item{alpha}{default = 0.05}
+\item{pvalue}{p-value cut-off for enrichment or differential consideration,
+default = 0.05}
 
-\item{fdr}{logical, should consider False discovery rate
-default = FALSE}
+\item{fdr}{logical, default = FALSE should False discovery rate adjusted
+pvalue be used instead of pvalue}
 }
 \value{
 a \code{vector} of gene names

@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.5</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.6</span>
       </span>
     </div>
 
@@ -125,7 +125,8 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_volcano</span>(<span class='no'>de_res</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>lfc_threshold</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>fdr</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_volcano</span>(<span class='no'>de_res</span>, <span class='kw'>pvalue</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>lfc_threshold</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>fdr</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -135,8 +136,9 @@
       <td><p>de_analysis result</p></td>
     </tr>
     <tr>
-      <th>alpha</th>
-      <td><p>default = 0.05</p></td>
+      <th>pvalue</th>
+      <td><p>p-value cut-off for enrichment or differential consideration,
+default = 0.05</p></td>
     </tr>
     <tr>
       <th>lfc_threshold</th>
@@ -144,8 +146,8 @@
     </tr>
     <tr>
       <th>fdr</th>
-      <td><p>logical, should consider False discovery rate
-default = FALSE</p></td>
+      <td><p>logical, default = FALSE should False discovery rate adjusted
+pvalue be used instead of pvalue</p></td>
     </tr>
     </table>
     

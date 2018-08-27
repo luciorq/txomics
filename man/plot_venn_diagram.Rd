@@ -10,12 +10,13 @@ plot_venn_diagram(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 \arguments{
 \item{...}{de_analysis or gsea_analysis data frames}
 
-\item{pvalue}{p-value cut-off for enrichment or differential consideration}
+\item{pvalue}{p-value cut-off for enrichment or differential consideration,
+default = 0.05}
 
-\item{fdr}{logical, default = FALSE should adjusted pvalue be used
-instead of pvalue}
+\item{fdr}{logical, default = FALSE should False discovery rate adjusted
+pvalue be used instead of pvalue}
 
-\item{names}{vector with names}
+\item{names}{vector with names to be used for each group}
 
 \item{filename}{path to were the image should be saved}
 

@@ -10,7 +10,8 @@ plot_heatmap(tx, sample_table, color_by = NULL, num = NULL,
 \arguments{
 \item{tx}{txi object, matrix or data frame with trancript abundance}
 
-\item{sample_table}{metadata data frame}
+\item{sample_table}{metadata data frame, containing description
+of each sample and experimental design}
 
 \item{color_by}{variable from sample table to group samples in the plot}
 
