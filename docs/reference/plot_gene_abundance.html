@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Perform Differential Expression Analysis — de_analysis • txomics</title>
+<title>Plot Gene Expression — plot_gene_abundance • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Perform Differential Expression Analysis — de_analysis" />
+<meta property="og:title" content="Plot Gene Expression — plot_gene_abundance" />
 
-<meta property="og:description" content="Run DESeq2 pipeline for differentially expressed genes." />
+<meta property="og:description" content="Plot gene expression points" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -114,26 +114,31 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Perform Differential Expression Analysis</h1>
+    <h1>Plot Gene Expression</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>de_analysis.Rd</code></div>
+    <div class="hidden name"><code>plot_gene_abundance.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Run DESeq2 pipeline for differentially expressed genes.</p>
+    <p>Plot gene expression points</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>de_analysis</span>(<span class='no'>tx</span>, <span class='no'>sample_table</span>, <span class='no'>contrast_var</span>, <span class='no'>numerator</span>, <span class='no'>denominator</span>,
-  <span class='kw'>batch_var</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>beta_prior</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>force_rep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_gene_abundance</span>(<span class='no'>gene</span>, <span class='no'>tx</span>, <span class='kw'>sample_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>color_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>gene</th>
+      <td><p>gene or vector of genes</p></td>
+    </tr>
+    <tr>
       <th>tx</th>
-      <td><p>imported transcripts object containing reads counts</p></td>
+      <td><p><code>txi</code> object, object imported with
+`import_tx()` or data frame wih gene abundance</p></td>
     </tr>
     <tr>
       <th>sample_table</th>
@@ -141,34 +146,14 @@
 of each sample and experimental design</p></td>
     </tr>
     <tr>
-      <th>contrast_var</th>
-      <td><p>column name from the sample_table</p></td>
+      <th>color_by</th>
+      <td><p>variable from sample table to group samples in the plot</p></td>
     </tr>
     <tr>
-      <th>numerator</th>
-      <td><p>factor from contrast_var to be considered as treatment</p></td>
-    </tr>
-    <tr>
-      <th>denominator</th>
-      <td><p>factor from contrast_var to be considered as control</p></td>
-    </tr>
-    <tr>
-      <th>batch_var</th>
-      <td><p>column from sample_table to be considered for batch effect</p></td>
-    </tr>
-    <tr>
-      <th>beta_prior</th>
-      <td><p>default = TRUE, set to FALSE to use apeglm method</p></td>
-    </tr>
-    <tr>
-      <th>force_rep</th>
-      <td><p>default = FALSE, experimental</p></td>
+      <th>filter</th>
+      <td><p>samples to filter, dafault = NULL</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A <code>tibble</code> object</p>
     
 
   </div>
@@ -176,9 +161,7 @@ of each sample and experimental design</p></td>
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

@@ -14,6 +14,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 
 #' retrieve metadata from NCBI SRA
 #'
+#' If you are using SRA accessions, it's possible to retrieve
+#' sample_table or matadata based on the deposited information
 #' retrieve metadata from NCBI SRA
 #'
 retrieve_metadata_sra <- function() {
@@ -77,17 +79,17 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
 #'
 #' @export
 #'
+#dir <- "data/salmon/res_quants/"
 salmon_libtype <- function(dir) {
-  ## Function to retrieve Salmon library type from files in Path
-  salmon_libtype_ <- function(lib, dir) {
-    ## Function to retrieve Salmon library from file
+  files <- list.files(dir)
+  files %>%
+    purrr::map_df( ~{
+    lib <- .x
     lib_type <- paste0(dir,"/",lib,"/lib_format_counts.json") %>%
       jsonlite::read_json() %>%
-      dplyr::pull(`expected_format`)
+      .$`expected_format`
     dplyr::data_frame(lib, lib_type)
-  }
-  files <- list.files(dir)
-  purrr::map_df(files, salmon_libtype_, dir)
+  }, dir)
 }
 
 #' Retrieve Mapping Rate
@@ -319,7 +321,8 @@ gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
     gene_set_col <- base::colnames(gene_sets)[1]
     temp_list <- gene_sets %>%
       dplyr::group_by(!!as.name(gene_set_col)) %>%
-      dplyr::summarise(gene = list(gene))
+      dplyr::summarise(gene = list(gene)) %>%
+      dplyr::ungroup()
     gene_sets_list <- temp_list$gene
     names(gene_sets_list) <- temp_list %>%
       base::as.data.frame() %>%
@@ -450,7 +453,8 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   if(!is.matrix(expression_matrix)){
     if(!all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix)))))){
       temp_mat <- as.matrix(expression_matrix[,2:length(expression_matrix)])
-      rownames(temp_mat) <- expression_matrix %>% dplyr::pull(1)
+      rownames(temp_mat) <- expression_matrix %>%
+        dplyr::pull(1)
       expression_matrix <- temp_mat
     }
   }
@@ -529,11 +533,19 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     value = "draw_colnames_45",
     ns = asNamespace("pheatmap")
   )
-
+  if(!isTRUE(scale == "none")){
+    color_function <- function(){
+      grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(n = 7, name =
+                                                                 "PRGn")))(100)
+    }
+  } else{
+    color_function <- function(){
+      viridis::viridis(100, direction = 1)
+    }
+  }
   pheatmap::pheatmap(
     mat = mat,
-    color = viridis::viridis(100, direction = 1),
-    #scale = "row",
+    color = color_function(),
     annotation_col = annotation_df,
     annotation_colors = annotation_pallete,
     show_rownames = show_rownames,
@@ -796,7 +808,8 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
     gene_set_col <- base::colnames(gene_sets)[1]
     temp_list <- gene_sets %>%
       dplyr::group_by(!!as.name(gene_set_col)) %>%
-      dplyr::summarise(gene = list(gene))
+      dplyr::summarise(gene = list(gene)) %>%
+      dplyr::ungroup()
     gene_sets_list <- temp_list$gene
     names(gene_sets_list) <- temp_list %>%
       base::as.data.frame() %>%
@@ -1037,6 +1050,96 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     breaks = seq( 0, p_value_max, (p_value_max/100) )
   )
 }
+
+#' Plot Gene Expression
+#'
+#' Plot gene expression points
+#'
+#' @param gene gene or vector of genes
+#'
+#' @param tx \code{txi} object, object imported with
+#'            `import_tx()` or data frame wih gene abundance
+#'
+#' @param sample_table metadata data frame, containing description
+#'                     of each sample and experimental design
+#'
+#' @param color_by variable from sample table to group samples in the plot
+#'
+#' @param filter samples to filter, dafault = NULL
+#'
+#' @export
+#'
+#tx <- imported_transcripts;gene <- "AAEL006469";sample_table <- samples_metadata;color_by_var <- "condition";
+plot_gene_abundance <- function( gene, tx, sample_table = NULL, color_by = NULL, filter = NULL ) {
+  if(isTRUE(is.list(tx))){
+    expr_df <- tx$abundance
+  }
+  metadata_df <- sample_table
+  if(is.null(sample_table)){
+    metadata_df <- dplyr::data_frame()
+  } else{
+    sample_var <- metadata_df %>%
+      dplyr::select(1) %>%
+      names()
+  }
+  color_by_var <- color_by
+  gene_query <- gene
+  expr_df %>%
+    dplyr::as_tibble( rownames = "gene" ) %>%
+    dplyr::filter( gene %in% gene_query) %>%
+    tidyr::gather(sample, tpm, -gene) %>%
+    dplyr::left_join(metadata_df, by = c("sample" = sample_var)) %>%
+    ggplot2::ggplot( ) +
+    ggplot2::geom_point( ggplot2::aes(sample, tpm, color = !!as.name(color_by_var)),size = 3) +
+    ggpubr::theme_pubr() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1)) +
+    ggplot2::scale_color_viridis_d()
+}
+
+#' Plot GSEA Results and Leading Edge
+#'
+#' plot gsea results with leading edge genes for enriched gene sets
+#'
+#' @param gsea_res result from gsea_analysis
+#'
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#'
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
+#'
+#' @export
+#'
+plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
+  pvalue_cutoff <- pvalue
+  pvalue_var <- dplyr::quo(pvalue)
+  if(isTRUE(fdr)){
+    pvalue_var <- dplyr::quo(padj)
+  }
+  gsea_res_sig <- gsea_res %>%
+    dplyr::filter( !!pvalue_var < pvalue_cutoff )
+  leading_edge_number <- c()
+  for (paths in gsea_res_sig$leadingEdge){
+    leading_edge_number <- c(leading_edge_number, length(paths))
+  }
+  data <- dplyr::data_frame(gene_set=gsea_res_sig %>% dplyr::pull(1),
+                            NES=gsea_res_sig$NES,
+                            `Adjusted p-value`=gsea_res_sig %>% dplyr::pull( !!pvalue_var),
+                            `No of LE genes`=leading_edge_number)
+  # Plotting
+  p <- ggplot2::ggplot(data, ggplot2::aes(NES, gene_set))
+  p + ggplot2::geom_point(ggplot2::aes(colour=`Adjusted p-value`, size=`No of LE genes`)) +
+    ggplot2::scale_color_gradientn(colours=viridis::viridis(4, direction = -1), limits=c(0, 0.05)) +
+    ggplot2::geom_vline(xintercept=0, size=0.5, colour="gray50") +
+    ggplot2::theme(panel.background=ggplot2::element_rect(fill="gray95", colour="gray95"),
+                   panel.grid.major=ggplot2::element_line(size=0.25,linetype='solid', colour="gray90"),
+                   panel.grid.minor=ggplot2::element_line(size=0.25,linetype='solid', colour="gray90"),
+                   axis.title.y=ggplot2::element_blank()) +
+    ggplot2::expand_limits(x=c(-3,3)) +
+    ggplot2::scale_x_continuous(breaks=c(-3,-2,-1,0,1,2,3)) +
+    ggplot2::scale_y_discrete(limits=rev(data$gene_set)) +
+    ggpubr::theme_pubr()
+}
 #' Multiple Plot
 #'
 #' ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -1162,11 +1265,12 @@ retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
     pvalue_var <- dplyr::quo(padj)
   }
   pvalue_cutoff <- pvalue
-  if(is.list(...)){
-    deg_table_population <- ...
+  temp_var <- list(...)
+  if(is.list(temp_var)){
+    deg_table_population <- temp_var
   }
   else{
-    deg_table_population <- list(...)
+    deg_table_population <- list(temp_var)
   }
   if(!is.null(base::names(deg_table_population))){
     names <- base::names(deg_table_population)
@@ -1175,18 +1279,52 @@ retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
     purrr::map_df(
       ~{temp_res <- .x
       up_deg <- temp_res %>%
-        filter(!!pvalue_var < pvalue_cutoff) %>%
-        filter(log2FoldChange > 0) %>%
+        dplyr::filter(!!pvalue_var < pvalue_cutoff) %>%
+        dplyr::filter(log2FoldChange > 0) %>%
         nrow()
       down_deg <- temp_res %>%
-        filter(!!pvalue_var < pvalue_cutoff) %>%
-        filter(log2FoldChange < 0) %>%
+        dplyr::filter(!!pvalue_var < pvalue_cutoff) %>%
+        dplyr::filter(log2FoldChange < 0) %>%
         nrow()
-      data_frame(up = up_deg,
+      dplyr::data_frame(up = up_deg,
                  down = down_deg,
                  total = up_deg + down_deg)
       })
   deg_table_population %>%
     dplyr::mutate(population = names ) %>%
     dplyr::select(population, up, down, total )
+}
+#' Leading Edge Genes By Gene Set
+#'
+#' Retrieve table with leading edge genes by gene set, for multiple
+#' experiments the column occurrence will have the number of hits
+#'
+#' @param ... gsea_analysis results data frames
+#'
+#' @param names vector with names to be used for each group
+#'
+#' @export
+# gsea_res_list <- list(gsea_complex_bot_2014,gsea_complex_neo_2014,gsea_complex_rio_2013,gsea_complex_rio_2015)
+# names <- names <- c("Botucatu 2014", "Neopolis 2014", "Rio 2013", "Rio 2015")
+retrieve_le_table <- function(..., names = NULL) {
+  gsea_res_list <- list(...)
+  if(is.null(names)){
+    names <- ""
+  }
+  le_res <- gsea_res_list %>%
+    purrr::map2_df(names, ~{
+      gene_set_var <- .x %>%
+        dplyr::select(1) %>%
+        names()
+      sample_temp <- .y
+      .x %>%
+        tidyr::unnest() %>%
+        dplyr::select(!!gene_set_var, leadingEdge) %>%
+        dplyr::mutate( sample = sample_temp )
+    })
+  le_res %>%
+    dplyr::group_by(!!as.name(gene_set_var),leadingEdge) %>%
+    dplyr::summarise(occurrence = n()) %>%
+    dplyr::arrange(!!as.name(gene_set_var) ,-occurrence ) %>%
+    dplyr::ungroup()
 }

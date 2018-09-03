@@ -7,5 +7,7 @@
 retrieve_metadata_sra()
 }
 \description{
+If you are using SRA accessions, it's possible to retrieve
+sample_table or matadata based on the deposited information
 retrieve metadata from NCBI SRA
 }

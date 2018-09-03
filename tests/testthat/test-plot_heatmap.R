@@ -17,6 +17,7 @@ testthat::test_that("Test if plot_heatmap runs", {
     condition = c("A","2", "|", "A"),
     color = c("red", "green", "green","red")
   )
+
   res <- plot_heatmap(imported_transcripts, num = 30,show_rownames = TRUE)
 
   testthat::expect_equal(class(res), "pheatmap")
@@ -44,27 +45,3 @@ testthat::test_that("Test if plot_heatmap runs", {
 })
 
 
-
-###
-# library(txomics)
-# tx <- imported_transcripts
-# expression_matrix <- tx
-#
-# expression_matrix %>% as.matrix()
-#
-# all(!is.na(as.numeric(as.matrix(expression_matrix))))
-#
-# all(!is.na(as.numeric(as.matrix(expression_matrix[,2:length(expression_matrix)]))))
-#
-# temp_mat <- as.matrix(expression_matrix[,2:length(expression_matrix)])
-# rownames(temp_mat) <- expression_matrix %>% dplyr::pull(1)
-#
-# if(!is.matrix(expression_matrix)){
-#   #expression_matrix %>% class()
-#   if(!all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix)))))){
-#     temp_mat <- as.matrix(expression_matrix[,2:length(expression_matrix)])
-#     rownames(temp_mat) <- expression_matrix %>% dplyr::pull(1)
-#     expression_matrix <- temp_mat
-#   }
-# }
-#

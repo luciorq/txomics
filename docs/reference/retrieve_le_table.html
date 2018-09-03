@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title><code>txomics</code> package — txomics • txomics</title>
+<title>Leading Edge Genes By Gene Set — retrieve_le_table • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,10 @@
 
 
 
-<meta property="og:title" content="<code>txomics</code> package — txomics" />
+<meta property="og:title" content="Leading Edge Genes By Gene Set — retrieve_le_table" />
 
-<meta property="og:description" content="Functional Analysis and Visualization of Transcriptomic Data" />
+<meta property="og:description" content="Retrieve table with leading edge genes by gene set, for multiple
+experiments the column occurrence will have the number of hits" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -63,7 +64,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.5</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.7</span>
       </span>
     </div>
 
@@ -114,31 +115,40 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1><code>txomics</code> package</h1>
+    <h1>Leading Edge Genes By Gene Set</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>txomics.Rd</code></div>
+    <div class="hidden name"><code>retrieve_le_table.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Functional Analysis and Visualization of Transcriptomic Data</p>
+    <p>Retrieve table with leading edge genes by gene set, for multiple
+experiments the column occurrence will have the number of hits</p>
     
     </div>
 
-        
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>See the README on
-<a href='https://github.com/luciorq/txomics#readme'>GitHub</a></p>
+    <pre class="usage"><span class='fu'>retrieve_le_table</span>(<span class='no'>...</span>, <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>...</th>
+      <td><p>gsea_analysis results data frames</p></td>
+    </tr>
+    <tr>
+      <th>names</th>
+      <td><p>vector with names to be used for each group</p></td>
+    </tr>
+    </table>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      
-      <li><a href="#details">Details</a></li>
-          </ul>
+      <li><a href="#arguments">Arguments</a></li>
+                </ul>
 
   </div>
 </div>

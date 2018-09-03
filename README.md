@@ -28,6 +28,8 @@ The development version can be installed from [GitHub](https://github.com/) with
 ``` r
 # install.packages("devtools")
 devtools::install_github("luciorq/txomics")
+## To install the stable release of txomics:
+devtools::install_github("luciorq/txomics@*release")
 ## For specific release versions use, changing v1.0.0 with the respective release:
 devtools::install_github("luciorq/txomics@v1.0.0")
 ```

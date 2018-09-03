@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Filter Imported Transcripts — filter_txi • txomics</title>
+<title>Plot GSEA Results and Leading Edge — plot_gsea_res • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,11 +30,9 @@
 
 
 
-<meta property="og:title" content="Filter Imported Transcripts — filter_txi" />
+<meta property="og:title" content="Plot GSEA Results and Leading Edge — plot_gsea_res" />
 
-<meta property="og:description" content="Filter salmon quantification files
-in a txi format
-based on metadata column and levels" />
+<meta property="og:description" content="plot gsea results with leading edge genes for enriched gene sets" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -65,7 +63,7 @@ based on metadata column and levels" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.5</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.7</span>
       </span>
     </div>
 
@@ -116,45 +114,37 @@ based on metadata column and levels" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Filter Imported Transcripts</h1>
+    <h1>Plot GSEA Results and Leading Edge</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>filter_txi.Rd</code></div>
+    <div class="hidden name"><code>plot_gsea_res.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Filter salmon quantification files
-in a <code>txi</code> format
-based on metadata column and levels</p>
+    <p>plot gsea results with leading edge genes for enriched gene sets</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>filter_txi</span>(<span class='no'>txi</span>, <span class='no'>sample_table</span>, <span class='kw'>var_column</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>var_levels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_gsea_res</span>(<span class='no'>gsea_res</span>, <span class='kw'>pvalue</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>fdr</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>txi</th>
-      <td><p>txi object</p></td>
+      <th>gsea_res</th>
+      <td><p>result from gsea_analysis</p></td>
     </tr>
     <tr>
-      <th>sample_table</th>
-      <td><p>metadata data frame</p></td>
+      <th>pvalue</th>
+      <td><p>p-value cut-off for enrichment or differential consideration,
+default = 0.05</p></td>
     </tr>
     <tr>
-      <th>var_column</th>
-      <td><p>variable to filter the input</p></td>
-    </tr>
-    <tr>
-      <th>var_levels</th>
-      <td><p>levels of var_column to filter the input</p></td>
+      <th>fdr</th>
+      <td><p>logical, default = FALSE should False discovery rate adjusted
+pvalue be used instead of pvalue</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A <code>txi</code> object</p>
     
 
   </div>
@@ -162,9 +152,7 @@ based on metadata column and levels</p>
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>
