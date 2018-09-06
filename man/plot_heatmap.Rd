@@ -15,7 +15,10 @@ of each sample and experimental design}
 
 \item{color_by}{variable from sample table to group samples in the plot}
 
-\item{num}{number of genes to plot, filtering by variance between samples}
+\item{num}{number of genes to plot, filtering by variance between samples,
+if num is negative, it is used the absolute num of genes with
+smaller, if num is NULL all genes are used.
+default = NULL.}
 
 \item{scale}{logical, default = "row", normalize data by row, column or none}
 

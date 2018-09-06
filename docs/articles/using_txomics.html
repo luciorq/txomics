@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.7</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.8</span>
       </span>
     </div>
 
@@ -83,7 +83,7 @@
       <h1>Using txomics - Hands-on Tutorial</h1>
                         <h4 class="author">Lucio Rezende Queiroz</h4>
             
-            <h4 class="date">2018-09-03</h4>
+            <h4 class="date">2018-09-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/luciorq/txomics/blob/master/vignettes/using_txomics.Rmd"><code>vignettes/using_txomics.Rmd</code></a></small>
       <div class="hidden name"><code>using_txomics.Rmd</code></div>
@@ -92,210 +92,481 @@
 
     
     
-<p>Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The <code>html_vignette</code> output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The <code>html_vignette</code> format:</p>
-<ul>
-<li>Never uses retina figures</li>
-<li>Has a smaller default figure size</li>
-<li>Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style</li>
-</ul>
-<div id="vignette-info" class="section level2">
+<div id="hands-on" class="section level1">
+<h1 class="hasAnchor">
+<a href="#hands-on" class="anchor"></a>Hands-on</h1>
+<div id="loading-package" class="section level2">
 <h2 class="hasAnchor">
-<a href="#vignette-info" class="anchor"></a>Vignette Info</h2>
-<p>Note the various macros within the <code>vignette</code> section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the <code>title</code> field and the <code>\VignetteIndexEntry</code> to match the title of your vignette.</p>
+<a href="#loading-package" class="anchor"></a>Loading package</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(txomics)
+<span class="co">#&gt; Attaching txomics package</span></code></pre></div>
 </div>
-<div id="styles" class="section level2">
+<div id="importing-gene-level-counts-and-expression-from-salmon-results" class="section level2">
 <h2 class="hasAnchor">
-<a href="#styles" class="anchor"></a>Styles</h2>
-<p>The <code>html_vignette</code> template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:</p>
-<pre><code>output: 
-  rmarkdown::html_vignette:
-    css: mystyles.css</code></pre>
-</div>
-<div id="figures" class="section level2">
-<h2 class="hasAnchor">
-<a href="#figures" class="anchor"></a>Figures</h2>
-<p>The figure sizes have been customised so that you can easily put two images side-by-side.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)
-<span class="kw">plot</span>(<span class="dv">10</span><span class="op">:</span><span class="dv">1</span>)</code></pre></div>
-<p><img src="using_txomics_files/figure-html/unnamed-chunk-1-1.png" width="700"><img src="using_txomics_files/figure-html/unnamed-chunk-1-2.png" width="700"></p>
-<p>You can enable figure captions by <code>fig_caption: yes</code> in YAML:</p>
-<pre><code>output:
-  rmarkdown::html_vignette:
-    fig_caption: yes</code></pre>
-<p>Then you can use the chunk option <code>fig.cap = "Your figure caption."</code> in <strong>knitr</strong>.</p>
-</div>
-<div id="more-examples" class="section level2">
-<h2 class="hasAnchor">
-<a href="#more-examples" class="anchor"></a>More Examples</h2>
-<p>You can write math expressions, e.g. <span class="math inline">\(Y = X\beta + \epsilon\)</span>, footnotes<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, and tables, e.g. using <code><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">knitr::kable()</a></code>.</p>
+<a href="#importing-gene-level-counts-and-expression-from-salmon-results" class="anchor"></a>Importing gene level counts and expression from salmon results</h2>
+<p>Salmon usually outputs a quant.sf file, you should input the path to folder containing this file to <code><a href="../reference/import_tx.html">import_tx()</a></code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">path_to_files &lt;-<span class="st"> "temp_test/quants/"</span>
+
+imported_expression &lt;-<span class="st"> </span><span class="kw"><a href="../reference/import_tx.html">import_tx</a></span>(path_to_files,<span class="dt">source =</span> <span class="st">"salmon"</span>, <span class="dt">accession =</span> <span class="st">"vectorbase"</span>)
+<span class="co">#&gt; Using files:</span>
+<span class="co">#&gt; temp_test/quants/salmon_output1/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output2/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output3/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output4/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output5/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output6/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output7/quant.sf</span>
+<span class="co">#&gt; temp_test/quants/salmon_output8/quant.sf</span>
+<span class="co">#&gt; Parsed with column specification:</span>
+<span class="co">#&gt; cols(</span>
+<span class="co">#&gt;   Name = col_character(),</span>
+<span class="co">#&gt;   Length = col_integer(),</span>
+<span class="co">#&gt;   EffectiveLength = col_double(),</span>
+<span class="co">#&gt;   TPM = col_integer(),</span>
+<span class="co">#&gt;   NumReads = col_integer()</span>
+<span class="co">#&gt; )</span>
+<span class="co">#&gt; reading in files with read_tsv</span>
+<span class="co">#&gt; 1 2 3 4 5 6 7 8 </span>
+<span class="co">#&gt; summarizing abundance</span>
+<span class="co">#&gt; summarizing counts</span>
+<span class="co">#&gt; summarizing length</span>
+imported_expression<span class="op">$</span>abundance <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">head</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th></th>
-<th align="right">mpg</th>
-<th align="right">cyl</th>
-<th align="right">disp</th>
-<th align="right">hp</th>
-<th align="right">drat</th>
-<th align="right">wt</th>
-<th align="right">qsec</th>
-<th align="right">vs</th>
-<th align="right">am</th>
-<th align="right">gear</th>
-<th align="right">carb</th>
+<th align="right">salmon_output1</th>
+<th align="right">salmon_output2</th>
+<th align="right">salmon_output3</th>
+<th align="right">salmon_output4</th>
+<th align="right">salmon_output5</th>
+<th align="right">salmon_output6</th>
+<th align="right">salmon_output7</th>
+<th align="right">salmon_output8</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Mazda RX4</td>
-<td align="right">21.0</td>
-<td align="right">6</td>
-<td align="right">160.0</td>
-<td align="right">110</td>
-<td align="right">3.90</td>
-<td align="right">2.620</td>
-<td align="right">16.46</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="right">4</td>
+<td>AAEL000001</td>
+<td align="right">142</td>
+<td align="right">37</td>
+<td align="right">50</td>
+<td align="right">44</td>
+<td align="right">73</td>
+<td align="right">54</td>
+<td align="right">84</td>
+<td align="right">26</td>
 </tr>
 <tr class="even">
-<td>Mazda RX4 Wag</td>
-<td align="right">21.0</td>
-<td align="right">6</td>
-<td align="right">160.0</td>
-<td align="right">110</td>
-<td align="right">3.90</td>
-<td align="right">2.875</td>
-<td align="right">17.02</td>
-<td align="right">0</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="right">4</td>
+<td>AAEL000004</td>
+<td align="right">77</td>
+<td align="right">78</td>
+<td align="right">83</td>
+<td align="right">120</td>
+<td align="right">60</td>
+<td align="right">90</td>
+<td align="right">92</td>
+<td align="right">49</td>
 </tr>
 <tr class="odd">
-<td>Datsun 710</td>
-<td align="right">22.8</td>
-<td align="right">4</td>
-<td align="right">108.0</td>
-<td align="right">93</td>
-<td align="right">3.85</td>
-<td align="right">2.320</td>
-<td align="right">18.61</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="right">1</td>
+<td>AAEL000005</td>
+<td align="right">433</td>
+<td align="right">295</td>
+<td align="right">270</td>
+<td align="right">341</td>
+<td align="right">285</td>
+<td align="right">306</td>
+<td align="right">315</td>
+<td align="right">194</td>
 </tr>
 <tr class="even">
-<td>Hornet 4 Drive</td>
-<td align="right">21.4</td>
-<td align="right">6</td>
-<td align="right">258.0</td>
-<td align="right">110</td>
-<td align="right">3.08</td>
-<td align="right">3.215</td>
-<td align="right">19.44</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">1</td>
+<td>AAEL000006</td>
+<td align="right">46</td>
+<td align="right">100</td>
+<td align="right">94</td>
+<td align="right">73</td>
+<td align="right">107</td>
+<td align="right">106</td>
+<td align="right">63</td>
+<td align="right">140</td>
 </tr>
 <tr class="odd">
-<td>Hornet Sportabout</td>
-<td align="right">18.7</td>
-<td align="right">8</td>
-<td align="right">360.0</td>
-<td align="right">175</td>
-<td align="right">3.15</td>
-<td align="right">3.440</td>
-<td align="right">17.02</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">2</td>
+<td>AAEL000008</td>
+<td align="right">307</td>
+<td align="right">298</td>
+<td align="right">249</td>
+<td align="right">259</td>
+<td align="right">265</td>
+<td align="right">233</td>
+<td align="right">259</td>
+<td align="right">315</td>
 </tr>
 <tr class="even">
-<td>Valiant</td>
-<td align="right">18.1</td>
-<td align="right">6</td>
-<td align="right">225.0</td>
-<td align="right">105</td>
-<td align="right">2.76</td>
-<td align="right">3.460</td>
-<td align="right">20.22</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">1</td>
-</tr>
-<tr class="odd">
-<td>Duster 360</td>
-<td align="right">14.3</td>
-<td align="right">8</td>
-<td align="right">360.0</td>
-<td align="right">245</td>
-<td align="right">3.21</td>
-<td align="right">3.570</td>
-<td align="right">15.84</td>
-<td align="right">0</td>
-<td align="right">0</td>
-<td align="right">3</td>
-<td align="right">4</td>
-</tr>
-<tr class="even">
-<td>Merc 240D</td>
-<td align="right">24.4</td>
-<td align="right">4</td>
-<td align="right">146.7</td>
-<td align="right">62</td>
-<td align="right">3.69</td>
-<td align="right">3.190</td>
-<td align="right">20.00</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td>Merc 230</td>
-<td align="right">22.8</td>
-<td align="right">4</td>
-<td align="right">140.8</td>
+<td>AAEL000010</td>
+<td align="right">204</td>
+<td align="right">121</td>
+<td align="right">114</td>
+<td align="right">154</td>
+<td align="right">40</td>
 <td align="right">95</td>
-<td align="right">3.92</td>
-<td align="right">3.150</td>
-<td align="right">22.90</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="even">
-<td>Merc 280</td>
-<td align="right">19.2</td>
-<td align="right">6</td>
-<td align="right">167.6</td>
-<td align="right">123</td>
-<td align="right">3.92</td>
-<td align="right">3.440</td>
-<td align="right">18.30</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">4</td>
-<td align="right">4</td>
+<td align="right">59</td>
+<td align="right">41</td>
 </tr>
 </tbody>
 </table>
-<p>Also a quote using <code>&gt;</code>:</p>
-<blockquote>
-<p>“He who gives up [code] safety for [code] speed deserves neither.” (<a href="https://twitter.com/hadleywickham/status/504368538874703872">via</a>)</p>
-</blockquote>
+<div id="experimental-design" class="section level3">
+<h3 class="hasAnchor">
+<a href="#experimental-design" class="anchor"></a>Experimental design</h3>
+<p>We need to have a sample table, or experimental design table, with description for each sample</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sample_table &lt;-<span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/reexports.html">data_frame</a></span>(
+  <span class="dt">sample =</span> <span class="kw">colnames</span>(imported_expression<span class="op">$</span>abundance),
+  <span class="dt">treatment =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">"drug_A"</span>,<span class="dv">4</span>),<span class="kw">rep</span>(<span class="st">"control"</span>,<span class="dv">4</span>)),
+  <span class="dt">day =</span> <span class="kw">as.character</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">2</span>))
+)
+
+sample_table <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">sample</th>
+<th align="left">treatment</th>
+<th align="left">day</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">salmon_output1</td>
+<td align="left">drug_A</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">salmon_output2</td>
+<td align="left">drug_A</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">salmon_output3</td>
+<td align="left">drug_A</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">salmon_output4</td>
+<td align="left">drug_A</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="left">salmon_output5</td>
+<td align="left">control</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">salmon_output6</td>
+<td align="left">control</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">salmon_output7</td>
+<td align="left">control</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">salmon_output8</td>
+<td align="left">control</td>
+<td align="left">2</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="footnotes">
-<hr>
-<ol>
-<li id="fn1"><p>A footnote here.<a href="#fnref1">↩</a></p></li>
-</ol>
+</div>
+</div>
+<div id="analysis" class="section level1">
+<h1 class="hasAnchor">
+<a href="#analysis" class="anchor"></a>Analysis</h1>
+<div id="differential-expression" class="section level2">
+<h2 class="hasAnchor">
+<a href="#differential-expression" class="anchor"></a>Differential expression</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">de_results &lt;-<span class="st"> </span>imported_expression <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw"><a href="../reference/de_analysis.html">de_analysis</a></span>(sample_table, <span class="dt">contrast_var =</span> <span class="st">"treatment"</span>, <span class="st">"drug_A"</span>, <span class="st">"control"</span>)
+<span class="co">#&gt; Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in</span>
+<span class="co">#&gt; design formula are characters, converting to factors</span>
+<span class="co">#&gt; using counts and average transcript lengths from tximport</span>
+<span class="co">#&gt; estimating size factors</span>
+<span class="co">#&gt; using 'avgTxLength' from assays(dds), correcting for library size</span>
+<span class="co">#&gt; estimating dispersions</span>
+<span class="co">#&gt; gene-wise dispersion estimates</span>
+<span class="co">#&gt; mean-dispersion relationship</span>
+<span class="co">#&gt; final dispersion estimates</span>
+<span class="co">#&gt; fitting model and testing</span>
+
+de_results <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(pvalue) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">head</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">gene</th>
+<th align="right">baseMean</th>
+<th align="right">log2FoldChange</th>
+<th align="right">lfcSE</th>
+<th align="right">stat</th>
+<th align="right">pvalue</th>
+<th align="right">padj</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">AAEL000043</td>
+<td align="right">89.68506</td>
+<td align="right">0.7137937</td>
+<td align="right">0.2608504</td>
+<td align="right">2.736410</td>
+<td align="right">0.0062114</td>
+<td align="right">0.4720631</td>
+</tr>
+<tr class="even">
+<td align="left">AAEL000071</td>
+<td align="right">99.84505</td>
+<td align="right">-0.6362684</td>
+<td align="right">0.2784497</td>
+<td align="right">-2.285039</td>
+<td align="right">0.0223105</td>
+<td align="right">0.7451870</td>
+</tr>
+<tr class="odd">
+<td align="left">AAEL000075</td>
+<td align="right">72.27185</td>
+<td align="right">0.6023182</td>
+<td align="right">0.2838283</td>
+<td align="right">2.122122</td>
+<td align="right">0.0338275</td>
+<td align="right">0.7451870</td>
+</tr>
+<tr class="even">
+<td align="left">AAEL000109</td>
+<td align="right">99.32454</td>
+<td align="right">0.5111775</td>
+<td align="right">0.2586498</td>
+<td align="right">1.976331</td>
+<td align="right">0.0481173</td>
+<td align="right">0.7451870</td>
+</tr>
+<tr class="odd">
+<td align="left">AAEL000097</td>
+<td align="right">118.96447</td>
+<td align="right">-0.4843116</td>
+<td align="right">0.2525720</td>
+<td align="right">-1.917519</td>
+<td align="right">0.0551720</td>
+<td align="right">0.7451870</td>
+</tr>
+<tr class="even">
+<td align="left">AAEL000041</td>
+<td align="right">266.07772</td>
+<td align="right">-0.4071233</td>
+<td align="right">0.2154710</td>
+<td align="right">-1.889458</td>
+<td align="right">0.0588306</td>
+<td align="right">0.7451870</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="gene-set-enrichment-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#gene-set-enrichment-analysis" class="anchor"></a>Gene Set Enrichment Analysis</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gsea_results &lt;-<span class="st"> </span>de_results <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw"><a href="../reference/gsea_analysis.html">gsea_analysis</a></span>(<span class="dt">gene_sets =</span> go_gene_sets)
+
+gsea_results <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(pvalue) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">head</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>()</code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">pathway</th>
+<th align="right">pvalue</th>
+<th align="right">padj</th>
+<th align="right">ES</th>
+<th align="right">NES</th>
+<th align="right">nMoreExtreme</th>
+<th align="right">size</th>
+<th align="left">leadingEdge</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">
+<a href="GO:0005549_odorant" class="uri">GO:0005549_odorant</a> binding</td>
+<td align="right">0.0234001</td>
+<td align="right">0.4605134</td>
+<td align="right">-0.8185600</td>
+<td align="right">-1.546815</td>
+<td align="right">1281</td>
+<td align="right">4</td>
+<td align="left">c(“AAEL000071”, “AAEL000073”)</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="GO:0005737_cytoplasm" class="uri">GO:0005737_cytoplasm</a></td>
+<td align="right">0.0425496</td>
+<td align="right">0.4605134</td>
+<td align="right">0.9189189</td>
+<td align="right">1.432114</td>
+<td align="right">2033</td>
+<td align="right">2</td>
+<td align="left">c(“AAEL000109”, “AAEL000108”)</td>
+</tr>
+<tr class="odd">
+<td align="left">
+<a href="GO:0016051_carbohydrate" class="uri">GO:0016051_carbohydrate</a> biosynthetic process</td>
+<td align="right">0.0513315</td>
+<td align="right">0.4605134</td>
+<td align="right">-0.9866667</td>
+<td align="right">-1.309650</td>
+<td align="right">2555</td>
+<td align="right">1</td>
+<td align="left">AAEL000097</td>
+</tr>
+<tr class="even">
+<td align="left">
+<a href="GO:0004970_ionotropic" class="uri">GO:0004970_ionotropic</a> glutamate receptor activity</td>
+<td align="right">0.0543888</td>
+<td align="right">0.4605134</td>
+<td align="right">-0.7318364</td>
+<td align="right">-1.482193</td>
+<td align="right">2998</td>
+<td align="right">5</td>
+<td align="left">c(“AAEL000011”, “AAEL000063”, “AAEL000089”, “AAEL000066”)</td>
+</tr>
+<tr class="odd">
+<td align="left">
+<a href="GO:0008152_metabolic" class="uri">GO:0008152_metabolic</a> process</td>
+<td align="right">0.0717528</td>
+<td align="right">0.4605134</td>
+<td align="right">0.8918919</td>
+<td align="right">1.389993</td>
+<td align="right">3429</td>
+<td align="right">2</td>
+<td align="left">c(“AAEL000109”, “AAEL000101”)</td>
+</tr>
+<tr class="even">
+<td align="left">
+<a href="GO:0000287_magnesium" class="uri">GO:0000287_magnesium</a> ion binding</td>
+<td align="right">0.0791507</td>
+<td align="right">0.4605134</td>
+<td align="right">0.9733333</td>
+<td align="right">1.292268</td>
+<td align="right">3973</td>
+<td align="right">1</td>
+<td align="left">AAEL000109</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="leading-edge-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#leading-edge-analysis" class="anchor"></a>Leading Edge analysis</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">best_gene_set &lt;-<span class="st"> </span>gsea_results <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(pvalue) <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/slice.html">slice</a></span>(<span class="dv">1</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/pull.html">pull</a></span>(pathway)
+
+best_gene_set
+<span class="co">#&gt; [1] "GO:0005549_odorant binding"</span>
+
+gsea_results <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw"><a href="../reference/le_analysis.html">le_analysis</a></span>(<span class="dt">set =</span> best_gene_set)
+<span class="co">#&gt; [1] "AAEL000071" "AAEL000073"</span></code></pre></div>
+</div>
+</div>
+<div id="figures" class="section level1">
+<h1 class="hasAnchor">
+<a href="#figures" class="anchor"></a>Figures</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_heatmap.html">plot_heatmap</a></span>(imported_expression, sample_table, <span class="dt">color_by =</span> <span class="kw">c</span>(<span class="st">"day"</span>,<span class="st">"treatment"</span>))</code></pre></div>
+<p><img src="using_txomics_files/figure-html/plot-heatmap-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/multiplot.html">multiplot</a></span>(
+  <span class="kw"><a href="../reference/plot_pca.html">plot_pca</a></span>(imported_expression, sample_table, <span class="dt">color_by =</span> <span class="st">"day"</span>),
+  <span class="kw"><a href="../reference/plot_pca.html">plot_pca</a></span>(imported_expression, sample_table, <span class="dt">color_by =</span> <span class="st">"treatment"</span>)
+)</code></pre></div>
+<p><img src="using_txomics_files/figure-html/plot-pca-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_volcano.html">plot_volcano</a></span>(de_results, <span class="dt">lfc_threshold =</span> <span class="fl">0.6</span>)</code></pre></div>
+<p><img src="using_txomics_files/figure-html/plot-volcano-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot_gene_expression.html">plot_gene_expression</a></span>(<span class="st">"AAEL000043"</span>,imported_expression, sample_table, <span class="st">"treatment"</span>)</code></pre></div>
+<p><img src="using_txomics_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()
+<span class="co">#&gt; R version 3.5.0 (2018-04-23)</span>
+<span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span>
+<span class="co">#&gt; Running under: Debian GNU/Linux 9 (stretch)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Matrix products: default</span>
+<span class="co">#&gt; BLAS: /usr/lib/openblas-base/libblas.so.3</span>
+<span class="co">#&gt; LAPACK: /usr/lib/libopenblasp-r0.2.19.so</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; locale:</span>
+<span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span>
+<span class="co">#&gt;  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    </span>
+<span class="co">#&gt;  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=C             </span>
+<span class="co">#&gt;  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 </span>
+<span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span>
+<span class="co">#&gt; [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; attached base packages:</span>
+<span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; other attached packages:</span>
+<span class="co">#&gt; [1] bindrcpp_0.2.2 txomics_0.1.8 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; loaded via a namespace (and not attached):</span>
+<span class="co">#&gt;   [1] bitops_1.0-6                matrixStats_0.54.0         </span>
+<span class="co">#&gt;   [3] fs_1.2.6                    bit64_0.9-7                </span>
+<span class="co">#&gt;   [5] RColorBrewer_1.1-2          rprojroot_1.3-2            </span>
+<span class="co">#&gt;   [7] GenomeInfoDb_1.16.0         tools_3.5.0                </span>
+<span class="co">#&gt;   [9] backports_1.1.2             R6_2.2.2                   </span>
+<span class="co">#&gt;  [11] rpart_4.1-13                Hmisc_4.1-1                </span>
+<span class="co">#&gt;  [13] DBI_1.0.0                   lazyeval_0.2.1             </span>
+<span class="co">#&gt;  [15] BiocGenerics_0.26.0         colorspace_1.3-2           </span>
+<span class="co">#&gt;  [17] nnet_7.3-12                 tidyselect_0.2.4           </span>
+<span class="co">#&gt;  [19] gridExtra_2.3               DESeq2_1.20.0              </span>
+<span class="co">#&gt;  [21] bit_1.1-14                  compiler_3.5.0             </span>
+<span class="co">#&gt;  [23] Biobase_2.40.0              htmlTable_1.12             </span>
+<span class="co">#&gt;  [25] xml2_1.2.0                  desc_1.2.0                 </span>
+<span class="co">#&gt;  [27] DelayedArray_0.6.4          labeling_0.3               </span>
+<span class="co">#&gt;  [29] scales_1.0.0                checkmate_1.8.5            </span>
+<span class="co">#&gt;  [31] readr_1.1.1                 genefilter_1.62.0          </span>
+<span class="co">#&gt;  [33] pkgdown_1.1.0               commonmark_1.5             </span>
+<span class="co">#&gt;  [35] stringr_1.3.1               digest_0.6.15              </span>
+<span class="co">#&gt;  [37] foreign_0.8-71              rmarkdown_1.10             </span>
+<span class="co">#&gt;  [39] XVector_0.20.0              base64enc_0.1-3            </span>
+<span class="co">#&gt;  [41] pkgconfig_2.0.1             htmltools_0.3.6            </span>
+<span class="co">#&gt;  [43] highr_0.7                   htmlwidgets_1.2            </span>
+<span class="co">#&gt;  [45] rlang_0.2.1                 rstudioapi_0.7             </span>
+<span class="co">#&gt;  [47] RSQLite_2.1.1               bindr_0.1.1                </span>
+<span class="co">#&gt;  [49] jsonlite_1.5                BiocParallel_1.14.2        </span>
+<span class="co">#&gt;  [51] acepack_1.4.1               dplyr_0.7.6                </span>
+<span class="co">#&gt;  [53] RCurl_1.95-4.11             magrittr_1.5               </span>
+<span class="co">#&gt;  [55] GenomeInfoDbData_1.1.0      Formula_1.2-3              </span>
+<span class="co">#&gt;  [57] Matrix_1.2-14               Rcpp_0.12.18               </span>
+<span class="co">#&gt;  [59] munsell_0.5.0               S4Vectors_0.18.3           </span>
+<span class="co">#&gt;  [61] viridis_0.5.1               stringi_1.2.4              </span>
+<span class="co">#&gt;  [63] yaml_2.2.0                  MASS_7.3-50                </span>
+<span class="co">#&gt;  [65] SummarizedExperiment_1.10.1 zlibbioc_1.26.0            </span>
+<span class="co">#&gt;  [67] plyr_1.8.4                  grid_3.5.0                 </span>
+<span class="co">#&gt;  [69] blob_1.1.1                  ggrepel_0.8.0              </span>
+<span class="co">#&gt;  [71] parallel_3.5.0              crayon_1.3.4               </span>
+<span class="co">#&gt;  [73] lattice_0.20-35             splines_3.5.0              </span>
+<span class="co">#&gt;  [75] annotate_1.58.0             hms_0.4.2                  </span>
+<span class="co">#&gt;  [77] locfit_1.5-9.1              knitr_1.20                 </span>
+<span class="co">#&gt;  [79] pillar_1.3.0                ggpubr_0.1.8               </span>
+<span class="co">#&gt;  [81] fgsea_1.6.0                 GenomicRanges_1.32.6       </span>
+<span class="co">#&gt;  [83] reshape2_1.4.3              geneplotter_1.58.0         </span>
+<span class="co">#&gt;  [85] stats4_3.5.0                fastmatch_1.1-0            </span>
+<span class="co">#&gt;  [87] XML_3.98-1.15               glue_1.3.0                 </span>
+<span class="co">#&gt;  [89] evaluate_0.11               latticeExtra_0.6-28        </span>
+<span class="co">#&gt;  [91] data.table_1.11.4           tidyr_0.8.1                </span>
+<span class="co">#&gt;  [93] gtable_0.2.0                purrr_0.2.5                </span>
+<span class="co">#&gt;  [95] assertthat_0.2.0            ggplot2_3.0.0              </span>
+<span class="co">#&gt;  [97] dendsort_0.3.3              xtable_1.8-2               </span>
+<span class="co">#&gt;  [99] roxygen2_6.1.0              viridisLite_0.3.0          </span>
+<span class="co">#&gt; [101] survival_2.42-6             pheatmap_1.0.11            </span>
+<span class="co">#&gt; [103] tibble_1.4.2                AnnotationDbi_1.42.1       </span>
+<span class="co">#&gt; [105] memoise_1.1.0               IRanges_2.14.10            </span>
+<span class="co">#&gt; [107] tximport_1.8.0              cluster_2.0.7-1</span></code></pre></div>
 </div>
   </div>
 
@@ -304,10 +575,20 @@
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#vignette-info">Vignette Info</a></li>
-      <li><a href="#styles">Styles</a></li>
+<li>
+<a href="#hands-on">Hands-on</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#loading-package">Loading package</a></li>
+      <li><a href="#importing-gene-level-counts-and-expression-from-salmon-results">Importing gene level counts and expression from salmon results</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#analysis">Analysis</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#differential-expression">Differential expression</a></li>
+      <li><a href="#gene-set-enrichment-analysis">Gene Set Enrichment Analysis</a></li>
+      <li><a href="#leading-edge-analysis">Leading Edge analysis</a></li>
+      </ul>
+</li>
       <li><a href="#figures">Figures</a></li>
-      <li><a href="#more-examples">More Examples</a></li>
       </ul>
 </div>
       </div>

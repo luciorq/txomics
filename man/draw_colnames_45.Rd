@@ -14,5 +14,5 @@ draw_colnames_45(coln, gaps, ...)
 \item{...}{additional parameters}
 }
 \description{
-Aux function for rotating plot_heatmap x axis
+Auxiliar function for rotating plot_heatmap x axis
 }

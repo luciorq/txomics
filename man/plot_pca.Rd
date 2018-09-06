@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{plot_pca}
 \alias{plot_pca}
-\title{Plot Two Dimensional PCA}
+\title{Plot Flat Three Dimensional PCA}
 \usage{
 plot_pca(tx, sample_table, color_by = NULL, num = NULL)
 }
@@ -14,9 +14,12 @@ of each sample and experimental design}
 
 \item{color_by}{variable from sample table to group samples in the plot}
 
-\item{num}{number of genes to plot, filtering by variance between samples}
+\item{num}{number of genes to plot, filtering by variance between samples,
+if num is negative, it is used the absolute num of genes with
+smaller, if num is NULL all genes are used.
+default = NULL.}
 }
 \description{
-Plot the results of a two dimensional principal component
-analysis.
+Plot the results of a pseudo/flat tri-dimensional
+principal component analysis, using 2 two dimensional plots.
 }

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Perform Gene Set Enrichment Analysis — gsea_analysis • txomics</title>
+<title>Plot Gene Expression — plot_gene_expression • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Perform Gene Set Enrichment Analysis — gsea_analysis" />
+<meta property="og:title" content="Plot Gene Expression — plot_gene_expression" />
 
-<meta property="og:description" content="Perform GSEA analysis." />
+<meta property="og:description" content="Plot gene expression points" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -114,42 +114,46 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Perform Gene Set Enrichment Analysis</h1>
+    <h1>Plot Gene Expression</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>gsea_analysis.Rd</code></div>
+    <div class="hidden name"><code>plot_gene_expression.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Perform GSEA analysis.</p>
+    <p>Plot gene expression points</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>gsea_analysis</span>(<span class='no'>de_res</span>, <span class='no'>gene_sets</span>, <span class='kw'>file_ext</span> <span class='kw'>=</span> <span class='st'>"gmt"</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_gene_expression</span>(<span class='no'>gene</span>, <span class='no'>tx</span>, <span class='kw'>sample_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>color_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>de_res</th>
-      <td><p>results from de_analysis function</p></td>
+      <th>gene</th>
+      <td><p>gene or vector of genes</p></td>
     </tr>
     <tr>
-      <th>gene_sets</th>
-      <td><p>tidy data frame of the gene sets or
-named list of genes named by gene set</p></td>
+      <th>tx</th>
+      <td><p><code>txi</code> object, object imported with
+`import_tx()` or data frame wih gene abundance</p></td>
     </tr>
     <tr>
-      <th>file_ext</th>
-      <td><p>File extension where the gene
-sets should be loaded GMT is the default for GSEA
-rds to load rds saved files. DEPRECATED</p></td>
+      <th>sample_table</th>
+      <td><p>metadata data frame, containing description
+of each sample and experimental design</p></td>
+    </tr>
+    <tr>
+      <th>color_by</th>
+      <td><p>variable from sample table to group samples in the plot</p></td>
+    </tr>
+    <tr>
+      <th>filter</th>
+      <td><p>samples to filter, dafault = NULL</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A <code>tibble</code> containing GSEA results</p>
     
 
   </div>
@@ -157,9 +161,7 @@ rds to load rds saved files. DEPRECATED</p></td>
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

@@ -1,8 +1,16 @@
+# txomics 0.1.8
+
+* handlers for expression tables in plots
+* added `plot_gene_expression()`
+* added PC3 to `plot_pca()`, for a pseudo 3d view
+* using `fs` for consistent cross-platform file operations
+* `tx_import()` now accepts custom gene to transcripts conversion table
+
 # txomics 0.1.7
 
-* Added `plot_gene_abundande()`
+* Added `plot_gene_abundance()`
 * Added `plot_gsea_res()`
-* Added `plot_gene_abundande()`
+* Added `retrieve_le_table()`
 
 # txomics 0.1.6
 
@@ -16,4 +24,4 @@
 
 # txomics 0.1.0
 
-* initial development
+* Initial development

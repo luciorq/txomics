@@ -4,10 +4,10 @@
 \alias{retrieve_mapping_rate}
 \title{Retrieve Mapping Rate}
 \usage{
-retrieve_mapping_rate(dir)
+retrieve_mapping_rate(path)
 }
 \arguments{
-\item{dir}{path to Salmon results files}
+\item{path}{path to Salmon results files}
 }
 \value{
 A \code{tibble} object

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot Gene Expression — plot_gene_abundance • txomics</title>
+<title>plot aux function 2 — prepare_tx_mat • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Plot Gene Expression — plot_gene_abundance" />
+<meta property="og:title" content="plot aux function 2 — prepare_tx_mat" />
 
-<meta property="og:description" content="Plot gene expression points" />
+<meta property="og:description" content="Prepare data for plotting PCA or Expression heatmap" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.7</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.8</span>
       </span>
     </div>
 
@@ -114,44 +114,25 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot Gene Expression</h1>
+    <h1>plot aux function 2</h1>
     <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
-    <div class="hidden name"><code>plot_gene_abundance.Rd</code></div>
+    <div class="hidden name"><code>prepare_tx_mat.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Plot gene expression points</p>
+    <p>Prepare data for plotting PCA or Expression heatmap</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_gene_abundance</span>(<span class='no'>gene</span>, <span class='no'>tx</span>, <span class='kw'>sample_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>color_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>prepare_tx_mat</span>(<span class='no'>tx</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>gene</th>
-      <td><p>gene or vector of genes</p></td>
-    </tr>
-    <tr>
       <th>tx</th>
-      <td><p><code>txi</code> object, object imported with
-`import_tx()` or data frame wih gene abundance</p></td>
-    </tr>
-    <tr>
-      <th>sample_table</th>
-      <td><p>metadata data frame, containing description
-of each sample and experimental design</p></td>
-    </tr>
-    <tr>
-      <th>color_by</th>
-      <td><p>variable from sample table to group samples in the plot</p></td>
-    </tr>
-    <tr>
-      <th>filter</th>
-      <td><p>samples to filter, dafault = NULL</p></td>
+      <td><p>expression data or result from import_tx</p></td>
     </tr>
     </table>
     

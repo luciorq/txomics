@@ -6,6 +6,8 @@
 ## reference: https://github.com/jennybc/googlesheets/blob/master/R/googlesheets.R
 if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 
+## To test if a suggested package is installed:
+## requireNamespace("fs", quietly = TRUE)
 
 .onAttach <- function(libname, pkgname) {
   ##suppressPackageStartupMessages()
@@ -28,42 +30,93 @@ retrieve_metadata_sra <- function() {
 #'
 #' Function used to import transcripts count and abundance data
 #'
-#' @param dir path to files
+#' @param path path to files, or vector of paths,
+#'             if \code{is_dir} is set to FALSE
 #'
-#' @param source method used
+#' @param source quantification method used
 #'
-#' @param names source of gene names identifier
+#' @param accession source of gene names identifier
+#'              supported formats:"vectorbase", "gene", "custom"
+#'              If using "gene", the trancript names will be used as genes;
+#'              If using "custom", a conversion table should be
+#'              provided in the gene_table parameter;
+#'              not supported yet: "ensembl", "ncbi", "custom"
+#'
+#' @param is_dir if \code{path} is a directory containing
+#'               subdirectories with the files,
+#'               if \code{is_dir} is set to FALSE, path should be
+#'               a vector of paths;
+#'               default = TRUE
+#'
+#' @param names .vector of names to be used to each sample; default = NULL
+#'
+#' @param gene_table a transcript to gene conversion table,
+#'                   where the first column should be transcript name
+#'                  and the second column should be gene name,
+#'                  should only be used with accession = "custom"
 #'
 #' @return A \code{txi} object containing
 #'
 #' @examples
 #' \dontrun{
 #' # Example with path to folder input
-#' imported_transcripts <- import_tx("data/salmon/res_quants/")
+#' imported_transcripts <- import_tx("data/salmon/quants/")
 #' }
 #'
 #' @export
 #'
-import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
+import_tx <- function(path,
+                      source = "salmon",
+                      accession = "vectorbase",
+                      is_dir = TRUE,
+                      names = NULL,
+                      gene_table = NULL
+                      ){
   ## Function used to import transcripts abundance data
-  files <- file.path(dir, list.files(dir), "quant.sf")
-  if (!all(file.exists(files))) {
-    stop("Not all files exists")
-    #files <- files[file.exists(files)]
+  #files <- file.path(path, list.files(path), "quant.sf")
+  if(isTRUE(source == "salmon")) {
+    path_to_files <- c(fs::path(fs::dir_ls(path) , "quant.sf"),
+                       fs::path(path,"quant.sf"))
+    path_to_files <- path_to_files[fs::file_exists(path_to_files) == TRUE]
   }
-  names(files) <- list.files(dir) %>%
-    stringr::str_remove("_quant$")
-  tx_vector <- readr::read_delim(
-      files[1],"\t", escape_double = FALSE, trim_ws = TRUE
+  message("Using files:\n",paste(path_to_files,collapse = "\n"),"\n")
+  #if (!isTRUE(all(fs::file_exists(salmon_files)))) {
+  #  stop("Not all files exists.")
+  #  #files <- files[file.exists(files)]
+  #}
+  if(!is.null(names)){
+    if(isTRUE(length(names) == length(path_to_files) )) {
+      names(path_to_files) <- names
+    } else {
+      stop("Number of names (sample names) should be the same as files to read.")
+    }
+  } else{
+    names(path_to_files) <- path_to_files %>%
+      stringr::str_extract("/(.*)/") %>%
+      stringr::str_remove("/$") %>%
+      stringr::str_remove(".*/")
+  }
+  #names(files) <- list.files(path) %>%
+  #  stringr::str_remove("_quant$")
+  tx_accession <- readr::read_delim(
+      path_to_files[1],"\t", escape_double = FALSE, trim_ws = TRUE
     ) %>%
     dplyr::pull(`Name`)
-  if(names == "vectorbase"){
-    gene_vector <- tx_vector %>% stringr::str_remove("-R.*")
-    tx2gene <- data.frame("TXNAME" = tx_vector, "GENEID" = gene_vector)
-  }else{
-    tx2gene <- data.frame("TXNAME" = tx_vector, "GENEID" = tx_vector)
+  if(isTRUE(accession == "vectorbase")){
+    gene_vectorbase <- tx_accession %>% stringr::str_remove("-R.*")
+    tx_to_gene <- dplyr::data_frame("TXNAME" = tx_accession, "GENEID" = gene_vectorbase)
   }
-  tx <- tximport::tximport(files, type = source, tx2gene = tx2gene)
+  if(isTRUE(accession == "gene")){
+    tx_to_gene <- dplyr::data_frame("TXNAME" = tx_accession, "GENEID" = tx_accession)
+  }
+  if(isTRUE(accession == "custom" )){
+    tx_custom <- gene_table %>%
+      dplyr::pull(1)
+    gene_custom <- gene_table %>%
+      dplyr::pull(2)
+    tx_to_gene <- dplyr::data_frame("TXNAME" = tx_custom, "GENEID" = gene_custom)
+  }
+  tx <- tximport::tximport(path_to_files, type = source, tx2gene = tx_to_gene)
   tx
 }
 
@@ -73,23 +126,23 @@ import_tx <- function(dir, source = "salmon", names = "vectorbase" ){
 #' protocol used for Salmon method of
 #' mapping.
 #'
-#' @param dir path to Salmon results files
+#' @param path path to Salmon results files
 #'
 #' @return A \code{tibble} object
 #'
 #' @export
 #'
-#dir <- "data/salmon/res_quants/"
-salmon_libtype <- function(dir) {
-  files <- list.files(dir)
+#path <- "data/salmon/res_quants/"
+salmon_libtype <- function(path) {
+  files <- list.files(path)
   files %>%
     purrr::map_df( ~{
-    lib <- .x
-    lib_type <- paste0(dir,"/",lib,"/lib_format_counts.json") %>%
+    lib_name <- .x
+    lib_type <- paste0(path,"/",lib_name,"/lib_format_counts.json") %>%
       jsonlite::read_json() %>%
       .$`expected_format`
     dplyr::data_frame(lib, lib_type)
-  }, dir)
+  }, path)
 }
 
 #' Retrieve Mapping Rate
@@ -99,16 +152,16 @@ salmon_libtype <- function(dir) {
 #' mapping rate from a Salmon mapped
 #' sample.
 #'
-#' @param dir path to Salmon results files
+#' @param path path to Salmon results files
 #'
 #' @return A \code{tibble} object
 #'
 #' @export
 #'
-retrieve_mapping_rate <- function( dir ) {
-  libs <- list.files(dir)
+retrieve_mapping_rate <- function( path ) {
+  libs <- list.files(path)
   purrr::map_df(libs, ~{
-    salmon_log <- readr::read_lines(paste0(dir,"/",.x,"/logs/salmon_quant.log"))
+    salmon_log <- readr::read_lines(paste0(path,"/",.x,"/logs/salmon_quant.log"))
     mapping_pct <- salmon_log %>%
       stringr::str_extract("info.*Mapping rate = .*%") %>%
       .[!is.na(.)] %>%
@@ -419,7 +472,10 @@ retrieve_deg <- function(de_res, pvalue = 0.05 ,fdr = FALSE){
 #'
 #' @param color_by variable from sample table to group samples in the plot
 #'
-#' @param num number of genes to plot, filtering by variance between samples
+#' @param num  number of genes to plot, filtering by variance between samples,
+#'            if num is negative, it is used the absolute num of genes with
+#'            smaller, if num is NULL all genes are used.
+#'            default = NULL.
 #'
 #' @param scale logical, default = "row", normalize data by row, column or none
 #'
@@ -435,41 +491,22 @@ retrieve_deg <- function(de_res, pvalue = 0.05 ,fdr = FALSE){
 plot_heatmap <- function(tx, sample_table, color_by = NULL,
                          num = NULL, scale = "row",
                          show_rownames = FALSE, ...) {
-  calc_var_by_row <- function(x, ...) {
-    base::rowSums((x - base::rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
-  }
-  if ( is.list(tx) ) {
-    if( !dplyr::is.tbl(tx) ){
-      expression_matrix <- tx$abundance
-    } else {
-      expression_matrix <- tx
-    }
-  } else {
-    expression_matrix <- tx
-  }
+  expression_matrix <- txomics::prepare_tx_mat(tx)
   if ( is.null(num) ) {
     num <- nrow(expression_matrix)
-  }
-  if(!is.matrix(expression_matrix)){
-    if(!all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix)))))){
-      temp_mat <- as.matrix(expression_matrix[,2:length(expression_matrix)])
-      rownames(temp_mat) <- expression_matrix %>%
-        dplyr::pull(1)
-      expression_matrix <- temp_mat
-    }
   }
   mat <- expression_matrix[base::rowSums(expression_matrix) > 1,]
   ## Scaling matrix
   if(scale == "row"){
-    mat <- t(scale(t(mat),center = TRUE, scale = TRUE))
+    mat <- base::t(base::scale(base::t(mat),center = TRUE, scale = TRUE))
   }else{
     if(scale == "column"){
-      mat <- scale(mat, center = TRUE, scale = TRUE)
+      mat <- base::scale(mat, center = TRUE, scale = TRUE)
     }
   }
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
+    dplyr::mutate( row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var)
   if( isTRUE(num > 0) ) {
     filtered_mat <- filtered_mat %>%
@@ -498,8 +535,8 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     row_names <- annotation_df %>% dplyr::pull(1)
     annotation_df <- annotation_df %>%
       dplyr::select( -1 ) %>%
-      as.data.frame()
-    rownames(annotation_df) <-  row_names
+      base::as.data.frame()
+    base::rownames(annotation_df) <-  row_names
     ## Generate Annotation discrete color pallette
     df_names <- colnames(annotation_df)
     df_lengths <- df_names %>%
@@ -558,10 +595,10 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     ...
     )
 }
-#' Plot Two Dimensional PCA
+#' Plot Flat Three Dimensional PCA
 #'
-#' Plot the results of a two dimensional principal component
-#' analysis.
+#' Plot the results of a pseudo/flat tri-dimensional
+#' principal component analysis, using 2 two dimensional plots.
 #'
 #' @param tx txi object, matrix or data frame with trancript abundance
 #'
@@ -570,7 +607,10 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 #'
 #' @param color_by variable from sample table to group samples in the plot
 #'
-#' @param num number of genes to plot, filtering by variance between samples
+#' @param num  number of genes to plot, filtering by variance between samples,
+#'            if num is negative, it is used the absolute num of genes with
+#'            smaller, if num is NULL all genes are used.
+#'            default = NULL.
 #'
 #' @importFrom stats prcomp
 #'
@@ -578,28 +618,19 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 #'
 #' @export
 #'
-#tx <- imported_transcripts; sample_table <- samples_metadata
-#color_by = c("condition","population"); num = 500
-plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
-
-  calc_var_by_row <- function(x, ...) {
-    rowSums((x - rowMeans(x, ...))^2, ...)/(dim(x)[2] - 1)
-  }
-  if(is.list(tx)) {
-    expression_matrix <- tx$abundance
-  } else{
-    expression_matrix <- tx
-  }
+plot_pca <- function(tx, sample_table,
+                     color_by = NULL, num = NULL) {
+  expression_matrix <- txomics::prepare_tx_mat(tx)
   if( is.null(num) ) {
     num <- nrow(expression_matrix)
   }
   mat <- expression_matrix[rowSums(expression_matrix) > 1,]
   ## Scaling matrix by row
-  mat <- t(scale(t(mat),center = TRUE, scale = TRUE))
+  mat <- base::t(base::scale(base::t(mat),center = TRUE, scale = TRUE))
 
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = calc_var_by_row(.[2:length(.)])) %>%
+    dplyr::mutate( row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var)
   if( isTRUE(num > 0) ) {
     filtered_mat <- filtered_mat %>%
@@ -617,14 +648,14 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
     dplyr::select( -row_var)
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
-    as.matrix()
-  rownames(mat) <- filtered_mat$gene
+    base::as.matrix()
+  base::rownames(mat) <- filtered_mat$gene
 
   pca <- mat %>%
-    t() %>%
+    base::t() %>%
     stats::prcomp()
 
-  percentVar <- pca$sdev^2/sum(pca$sdev^2)
+  var_percent <- pca$sdev^2/base::sum(pca$sdev^2)
 
   pc_1 <- pca$x[, 1]
   pc_1_df <- dplyr::data_frame(
@@ -636,45 +667,80 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
     sample = names(pc_2),
     PC2 = pc_2
   )
+  pc_3 <- pca$x[, 3]
+  pc_3_df <- dplyr::data_frame(
+    sample = names(pc_3),
+    PC3 = pc_3
+  )
   if (is.null(color_by)) {
     ## plot without colors
-    pc_1_df %>%
+    df <- pc_1_df %>%
       dplyr::left_join(pc_2_df, by = "sample") %>%
-      dplyr::left_join(group_df, by = "sample") %>%
-      ggplot2::ggplot( ggplot2::aes(x = PC1, y = PC2, color = sample)) +
-      ggplot2::geom_point(size = 3) +
-      ggplot2::xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
-      ggplot2::ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
-      ggplot2::coord_fixed() +
-      ggpubr::theme_pubr() %>%
-      return()
-
+      dplyr::left_join(pc_3_df, by = "sample") %>%
+      tidyr::gather(pcomp, value, -c(sample,PC1))
+    breaks_x <- base::pretty(df$value)
+    breaks_y <- base::pretty(df$PC1)
+    plot_obj <- df %>%
+      ggplot2::ggplot( ggplot2::aes(x = value, y = PC1, color = sample)) +
+      ggplot2::geom_point(size = 4) +
+      ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance",
+                           "\t  PC3: ", round(var_percent[3]* 100),"% variance")) +
+      ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
+      ggplot2::facet_grid(cols = ggplot2::vars(pcomp), scales = "free") +
+      ggplot2::scale_color_viridis_d( direction = 1 ) +
+      ggplot2::annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf, color = "black") +
+      ggplot2::annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf, color = "black") +
+      ggpubr::theme_pubr() +
+      ggplot2::theme(
+        strip.background = ggplot2::element_blank(),
+        strip.text.x = ggplot2::element_blank()) +
+      ggplot2::scale_x_continuous(breaks = breaks_x, limits = base::range(breaks_x)) +
+      ggplot2::scale_y_continuous(breaks = breaks_y, limits = base::range(breaks_y))
+    return(plot_obj)
   }
-  if (!all(color_by %in% names(sample_table))) {
+  if (!isTRUE(all(color_by %in% names(sample_table)))) {
     stop("the values of 'color_by' should specify columns of sample_table metadata")
   }
-
   group_df <- sample_table %>%
     dplyr::select( sample, !!color_by )
 
   df <- pc_1_df %>%
     dplyr::left_join(pc_2_df, by = "sample") %>%
+    dplyr::left_join(pc_3_df, by = "sample") %>%
+    tidyr::gather(pcomp, value, -c(sample,PC1)) %>%
     dplyr::left_join(group_df, by = "sample") %>%
     tidyr::unite( group, !!color_by )
 
+  breaks_x <- base::pretty(df$value)
+  breaks_y <- base::pretty(df$PC1)
   df %>%
-    ggplot2::ggplot( ggplot2::aes(x = PC1, y = PC2, color = group)) +
-    ggplot2::geom_point(size = 3) +
-    ggplot2::xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
-    ggplot2::ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
-    ggplot2::coord_fixed() +
-    ggplot2::scale_color_viridis_d( direction = 1 ) +
-    ggpubr::theme_pubr()
-}#' Volcano Plot
+    ggplot2::ggplot( ggplot2::aes(x = value, y = PC1, color = group)) +
+      ggplot2::geom_point(size = 4) +
+      ggplot2::xlab(paste0(
+        "PC2: ", round(var_percent[2] * 100), "% variance",
+        "\t\t\t\t  PC3: ", round(var_percent[3]* 100),"% variance")) +
+      ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
+      ggplot2::facet_grid(cols = ggplot2::vars(pcomp), scales = "free") +
+      ggplot2::scale_color_viridis_d( direction = 1 ) +
+      ggplot2::annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf, color = "black") +
+      ggplot2::annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf, color = "black") +
+      ggpubr::theme_pubr() +
+      #ggplot2::coord_fixed() +
+      ggplot2::theme(
+        strip.background = ggplot2::element_blank(),
+        strip.text.x = ggplot2::element_blank()) +
+      ggplot2::scale_x_continuous(breaks = breaks_x, limits = base::range(breaks_x)) +
+      ggplot2::scale_y_continuous(breaks = breaks_y, limits = base::range(breaks_y))
+    #ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance")) +
+    #  ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
+    #  ggplot2::scale_color_viridis_d( direction = 1 ) +
+    #  ggpubr::theme_pubr()
+}
+#' Volcano Plot
 #'
 #' A volcano plot from DE genes analysis results.
 #'
-#' @param de_res de_analysis result
+#' @param de_res de_analysis results
 #'
 #' @param pvalue p-value cut-off for enrichment or differential consideration,
 #'               default = 0.05
@@ -688,8 +754,8 @@ plot_pca <- function (tx, sample_table, color_by = NULL, num = NULL) {
 #'
 #' @export
 #'
-#de_res <- de_res_batch; pvalue <- 0.05;fdr <- TRUE; lfc_threshold <- 0.9
-plot_volcano <- function(de_res, pvalue  = 0.05, lfc_threshold = NULL, fdr = FALSE ) {
+plot_volcano <- function(de_res, pvalue  = 0.05,
+                         lfc_threshold = NULL, fdr = FALSE ) {
   ##scatter_plot <- function(data, x, y) {
   ##  x <- enquo(x)
   ##  y <- enquo(y)
@@ -714,7 +780,7 @@ plot_volcano <- function(de_res, pvalue  = 0.05, lfc_threshold = NULL, fdr = FAL
       dplyr::mutate(sig_alpha = dplyr::if_else( pvalue < alpha, 1, 0 ) )
   }
   if (is.null(lfc_threshold)) {
-    if (base::nrow(dplyr::filter(df, sig_alpha == 1 )) == 0  ){
+    if ( isTRUE(base::nrow(dplyr::filter(df, sig_alpha == 1 )) == 0 ) ){
       lfc_cutoff <- 2
     } else{
       lfc_cutoff <- df %>%
@@ -727,26 +793,51 @@ plot_volcano <- function(de_res, pvalue  = 0.05, lfc_threshold = NULL, fdr = FAL
     lfc_cutoff <- lfc_threshold
   }
   df <- df %>%
-    dplyr::mutate( sig_lfc = dplyr::if_else(abs(log2FoldChange) > lfc_cutoff, 2, 0 ) )
+    dplyr::mutate( sig_lfc = dplyr::if_else(abs(log2FoldChange) >= lfc_cutoff, 2, 0 ) )
   df <- df %>%
     dplyr::mutate(sig = as.character(sig_alpha + sig_lfc)) %>%
     dplyr::select(-c(sig_alpha, sig_lfc)) %>%
     dplyr::filter(!is.na(log2FoldChange))
   df$sig <- factor(df$sig, levels = c("0", "1", "2", "3") )
 
-  limits_x <- max(abs(df$log2FoldChange)) * 1.2
+  #limits_x <- max(abs(df$log2FoldChange)) * 1.2
 
   color_pallete <- viridis::viridis(3)
 
   pvalue_line <- alpha
   if(isTRUE(fdr)){
     pvalue_line <- df %>%
-      dplyr::filter(padj < alpha) %>%
-      dplyr::pull(pvalue) %>%
-      base::max()
+      dplyr::filter(padj < alpha)
+    if( isTRUE( nrow(pvalue_line) == 0 ) ) {
+      pvalue_line <- df %>%
+        dplyr::pull(pvalue) %>%
+        base::min()
+    } else {
+      pvalue_line <- pvalue_line %>%
+        dplyr::pull(pvalue) %>%
+        base::max()
+    }
   }
+
+
+  if( isTRUE(max(abs(df$log2FoldChange)) <= abs(lfc_cutoff)) ){
+    breaks_x <- base::pretty(base::range(-lfc_cutoff, lfc_cutoff))
+  } else{
+    breaks_x <- base::pretty(df$log2FoldChange)
+  }
+  if( isTRUE(max(-log10(df$pvalue)) <= 4) ) {
+    range_y <- c(0,4)
+  } else{
+    range_y <- -log10(df$pvalue)
+  }
+  breaks_y <- base::pretty(range_y)
+
+
   p <- df %>%
     ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
+    ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5 ) +
+    ggplot2::geom_vline(xintercept = lfc_cutoff, alpha = 0.5 ) +
+    ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5 ) +
     ggplot2::geom_point( ggplot2::aes( color = sig ) ) +
     ggplot2::scale_color_manual(
       values=c(`0` = color_pallete[1],`1` = color_pallete[2],`2` = color_pallete[2],`3` = color_pallete[3])
@@ -755,11 +846,10 @@ plot_volcano <- function(de_res, pvalue  = 0.05, lfc_threshold = NULL, fdr = FAL
       data = dplyr::filter(df, sig %in% "3" ),
       ggplot2::aes(label = gene)
     ) +
-    ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5 ) +
-    ggplot2::geom_vline(xintercept = lfc_cutoff, alpha = 0.5 ) +
-    ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5 ) +
-    ggplot2::expand_limits(x = c(-limits_x,limits_x)) +
-    ggplot2::expand_limits(y = c(0,5)) +
+    ggplot2::scale_x_continuous( breaks = breaks_x, limits = base::range(breaks_x*1.1)) +
+    ggplot2::scale_y_continuous( breaks = breaks_y, limits = base::range(breaks_y)) +
+    #ggplot2::expand_limits(x = c(-limits_x,limits_x)) +
+    #ggplot2::expand_limits(y = c(0,5)) +
     #ggplot2::coord_fixed() +
     ggpubr::theme_pubr()
   p
@@ -1069,20 +1159,25 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 #'
 #' @export
 #'
+#tx=imported_expression;gene="AAEL000080";color_by="day"
 #tx <- imported_transcripts;gene <- "AAEL006469";sample_table <- samples_metadata;color_by_var <- "condition";
-plot_gene_abundance <- function( gene, tx, sample_table = NULL, color_by = NULL, filter = NULL ) {
+plot_gene_expression <- function( gene, tx, sample_table = NULL,
+                                  color_by = NULL, filter = NULL ) {
   if(isTRUE(is.list(tx))){
     expr_df <- tx$abundance
   }
   metadata_df <- sample_table
   if(is.null(sample_table)){
     metadata_df <- dplyr::data_frame()
+
   } else{
     sample_var <- metadata_df %>%
       dplyr::select(1) %>%
       names()
   }
-  color_by_var <- color_by
+  if(!is.null(color_by)){
+    color_by_var <- color_by
+  }
   gene_query <- gene
   expr_df %>%
     dplyr::as_tibble( rownames = "gene" ) %>%
@@ -1164,9 +1259,9 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
   #library(grid)
 
   # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
+  plots <- c(base::list(...), plotlist)
 
-  num_plots <- length(plots)
+  num_plots <- base::length(plots)
 
 
 ## #' @param filename file path to save. Filetype is decided by the extension in the path.
@@ -1178,8 +1273,8 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
     # Make the panel
     # ncol: Number of columns of plots
     # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(num_plots/cols)),
-                     ncol = cols, nrow = ceiling(num_plots/cols))
+    layout <- base::matrix(seq(1, cols * base::ceiling(num_plots/cols)),
+                     ncol = cols, nrow = base::ceiling(num_plots/cols))
   }
 
   if (num_plots == 1) {
@@ -1188,12 +1283,12 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
   } else {
     # Set up the page
     grid::grid.newpage()
-    grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
+    grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), base::ncol(layout))))
 
     # Make each plot, in the correct location
     for (i in 1:num_plots) {
       # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      matchidx <- base::as.data.frame(base::which(layout == i, arr.ind = TRUE))
 
       print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
                                             layout.pos.col = matchidx$col))
@@ -1225,7 +1320,7 @@ NULL
 
 #' plot aux function
 #'
-#' Aux function for rotating plot_heatmap x axis
+#' Auxiliar function for rotating plot_heatmap x axis
 #'
 #' @param coln number of columns
 #' @param gaps gaps
@@ -1241,6 +1336,43 @@ draw_colnames_45 <- function (coln, gaps, ...) {
     vjust = 0.75, hjust = 1, rot = 45, gp = grid::gpar(...)
   )
   return(res)
+}
+
+#' Calculate Variance by Row
+#'
+#' Calculate variance by row in a matrix or data frame
+#'
+#' @param x matrix or data frame
+#' @param ... additional paramaters addressed to rowSums or rowMeans
+#' @export
+calc_var_by_row <- function(x, ...) {
+  base::rowSums((x - base::rowMeans(x, ...))^2, ...)/(base::dim(x)[2] - 1)
+}
+
+#' plot aux function 2
+#'
+#' Prepare data for plotting PCA or Expression heatmap
+#' @param tx expression data or result from import_tx
+#' @export
+prepare_tx_mat <- function(tx){
+  if( is.list(tx) ) {
+    if( !dplyr::is.tbl(tx) & !is.data.frame(tx)){
+      expression_matrix <- tx$abundance
+    } else {
+      expression_matrix <- tx
+    }
+  } else {
+    expression_matrix <- tx
+  }
+  if(!is.matrix(expression_matrix)){
+    if(!isTRUE(all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix))))))){
+      temp_mat <- base::as.matrix(expression_matrix[,2:length(expression_matrix)])
+      base::rownames(temp_mat) <- expression_matrix %>%
+        dplyr::pull(1)
+      expression_matrix <- temp_mat
+    }
+  }
+  expression_matrix
 }
 
 #' Differential Expression results

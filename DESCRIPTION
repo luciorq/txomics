@@ -1,7 +1,7 @@
 Package: txomics
 Type: Package
 Title: Functional Analysis and Visualization of Transcriptomic Data
-Version: 0.1.7
+Version: 0.1.8
 Authors@R: person("Lucio", "Rezende Queiroz", 
                   email = "luciorqueiroz@gmail.com",
                   role = c("aut", "cre"),
@@ -30,7 +30,9 @@ Imports:
     pheatmap,
     dendsort,
     rsvg,
-    VennDiagram
+    VennDiagram,
+    RColorBrewer,
+    fs
 RoxygenNote: 6.1.0
 URL: http://luciorq.github.io/txomics, https://github.com/luciorq/txomics
 BugReports: https://github.com/luciorq/txomics/issues

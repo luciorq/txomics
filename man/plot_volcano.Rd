@@ -8,7 +8,7 @@ plot_volcano(de_res, pvalue = 0.05, lfc_threshold = NULL,
   fdr = FALSE)
 }
 \arguments{
-\item{de_res}{de_analysis result}
+\item{de_res}{de_analysis results}
 
 \item{pvalue}{p-value cut-off for enrichment or differential consideration,
 default = 0.05}

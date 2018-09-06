@@ -63,7 +63,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">txomics</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.7</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.8</span>
       </span>
     </div>
 
@@ -125,22 +125,48 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>import_tx</span>(<span class='no'>dir</span>, <span class='kw'>source</span> <span class='kw'>=</span> <span class='st'>"salmon"</span>, <span class='kw'>names</span> <span class='kw'>=</span> <span class='st'>"vectorbase"</span>)</pre>
+    <pre class="usage"><span class='fu'>import_tx</span>(<span class='no'>path</span>, <span class='kw'>source</span> <span class='kw'>=</span> <span class='st'>"salmon"</span>, <span class='kw'>accession</span> <span class='kw'>=</span> <span class='st'>"vectorbase"</span>,
+  <span class='kw'>is_dir</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>gene_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>dir</th>
-      <td><p>path to files</p></td>
+      <th>path</th>
+      <td><p>path to files, or vector of paths,
+if <code>is_dir</code> is set to FALSE</p></td>
     </tr>
     <tr>
       <th>source</th>
-      <td><p>method used</p></td>
+      <td><p>quantification method used</p></td>
+    </tr>
+    <tr>
+      <th>accession</th>
+      <td><p>source of gene names identifier
+supported formats:"vectorbase", "gene", "custom"
+If using "gene", the trancript names will be used as genes;
+If using "custom", a conversion table should be
+provided in the gene_table parameter;
+not supported yet: "ensembl", "ncbi", "custom"</p></td>
+    </tr>
+    <tr>
+      <th>is_dir</th>
+      <td><p>if <code>path</code> is a directory containing
+subdirectories with the files,
+if <code>is_dir</code> is set to FALSE, path should be
+a vector of paths;
+default = TRUE</p></td>
     </tr>
     <tr>
       <th>names</th>
-      <td><p>source of gene names identifier</p></td>
+      <td><p>.vector of names to be used to each sample; default = NULL</p></td>
+    </tr>
+    <tr>
+      <th>gene_table</th>
+      <td><p>a transcript to gene conversion table,
+ where the first column should be transcript name
+and the second column should be gene name,
+should only be used with accession = "custom"</p></td>
     </tr>
     </table>
     
@@ -152,7 +178,7 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><span class='co'># NOT RUN {</span>
 <span class='co'># Example with path to folder input</span>
-<span class='no'>imported_transcripts</span> <span class='kw'>&lt;-</span> <span class='fu'>import_tx</span>(<span class='st'>"data/salmon/res_quants/"</span>)
+<span class='no'>imported_transcripts</span> <span class='kw'>&lt;-</span> <span class='fu'>import_tx</span>(<span class='st'>"data/salmon/quants/"</span>)
 <span class='co'># }</span><div class='input'>
 </div></pre>
   </div>

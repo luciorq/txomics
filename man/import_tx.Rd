@@ -4,14 +4,34 @@
 \alias{import_tx}
 \title{Import Expression Data}
 \usage{
-import_tx(dir, source = "salmon", names = "vectorbase")
+import_tx(path, source = "salmon", accession = "vectorbase",
+  is_dir = TRUE, names = NULL, gene_table = NULL)
 }
 \arguments{
-\item{dir}{path to files}
+\item{path}{path to files, or vector of paths,
+if \code{is_dir} is set to FALSE}
 
-\item{source}{method used}
+\item{source}{quantification method used}
 
-\item{names}{source of gene names identifier}
+\item{accession}{source of gene names identifier
+supported formats:"vectorbase", "gene", "custom"
+If using "gene", the trancript names will be used as genes;
+If using "custom", a conversion table should be
+provided in the gene_table parameter;
+not supported yet: "ensembl", "ncbi", "custom"}
+
+\item{is_dir}{if \code{path} is a directory containing
+subdirectories with the files,
+if \code{is_dir} is set to FALSE, path should be
+a vector of paths;
+default = TRUE}
+
+\item{names}{.vector of names to be used to each sample; default = NULL}
+
+\item{gene_table}{a transcript to gene conversion table,
+ where the first column should be transcript name
+and the second column should be gene name,
+should only be used with accession = "custom"}
 }
 \value{
 A \code{txi} object containing
@@ -22,7 +42,7 @@ Function used to import transcripts count and abundance data
 \examples{
 \dontrun{
 # Example with path to folder input
-imported_transcripts <- import_tx("data/salmon/res_quants/")
+imported_transcripts <- import_tx("data/salmon/quants/")
 }
 
 }

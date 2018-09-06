@@ -4,10 +4,10 @@
 \alias{salmon_libtype}
 \title{Infer Library Construction Type}
 \usage{
-salmon_libtype(dir)
+salmon_libtype(path)
 }
 \arguments{
-\item{dir}{path to Salmon results files}
+\item{path}{path to Salmon results files}
 }
 \value{
 A \code{tibble} object
