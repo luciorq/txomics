@@ -27,7 +27,7 @@ testthat::test_that("Test if plot_volcano runs",{
   testthat::expect_equal(tail(res1$data$gene),c("AAEL000146", "AAEL000147", "AAEL000148", "AAEL000149", "AAEL000151",
                          "AAEL000152"))
 
-  plot_volcano(de_res_test, fdr = TRUE)
+  plot_volcano(de_res_test, fdr = TRUE,lfc_threshold = 0)
 
   plot_volcano(de_res_test, fdr = TRUE, pvalue = 0.2)
 

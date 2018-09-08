@@ -762,13 +762,13 @@ plot_pca <- function(tx, sample_table,
 #'
 plot_volcano <- function(de_res, pvalue  = 0.05,
                          lfc_threshold = NULL, fdr = FALSE ) {
-  ##scatter_plot <- function(data, x, y) {
-  ##  x <- enquo(x)
-  ##  y <- enquo(y)
-  ##
-  ##  ggplot(data) + geom_point(aes(!!x, !!y))
-  ##}
-  ##scatter_plot(mtcars, disp, drat)
+  # scatter_plot <- function(data, x, y) {
+  #   x <- enquo(x)
+  #   y <- enquo(y)
+  #
+  #   ggplot(data) + geom_point(aes(!!x, !!y))
+  # }
+  # scatter_plot(mtcars, disp, drat)
   alpha <- pvalue
   pvalue_var <- dplyr::quo(pvalue)
   if (isTRUE(fdr)){
@@ -805,10 +805,6 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
     dplyr::mutate(sig = as.character(sig_alpha + sig_lfc)) %>%
     dplyr::select(-c(sig_alpha, sig_lfc)) %>%
     dplyr::filter(!is.na(log2FoldChange))
-  df$sig <- factor(df$sig, levels = c("0", "1", "2", "3") )
-
-  color_pallete <- viridis::viridis(3)
-
   pvalue_line <- alpha
   if (isTRUE(fdr)){
     pvalue_line <- df %>%
@@ -823,8 +819,6 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
         base::max()
     }
   }
-
-
   if ( isTRUE(max(abs(df$log2FoldChange)) <= abs(lfc_cutoff)) ){
     breaks_x <- base::pretty(base::range(-lfc_cutoff, lfc_cutoff))
   } else{
@@ -836,8 +830,31 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
     range_y <- -log10(df$pvalue)
   }
   breaks_y <- base::pretty(range_y)
-
-
+  pvalue_cutoff <- pvalue
+  sig_text <- c(
+    paste0(as.character(pvalue_var)[2],
+           " > ", as.character(pvalue_cutoff)),
+    paste0(as.character(pvalue_var)[2],
+           " <= ", as.character(pvalue_cutoff)),
+    paste0("abs(log2FC) > ",
+           as.character(lfc_cutoff)),
+    paste0(
+      as.character(pvalue_var)[2], " <= ",
+      as.character(pvalue_cutoff), " & ",
+      "abs(log2FC) >= ", as.character(lfc_cutoff))
+  )
+  df <- df %>%
+    dplyr::mutate(sig = dplyr::if_else(
+      sig == "0", sig_text[1], sig)) %>%
+    dplyr::mutate(sig = dplyr::if_else(
+      sig == "1",sig_text[2], sig)) %>%
+    dplyr::mutate(sig = dplyr::if_else(
+      sig == "2",sig_text[3], sig)) %>%
+    dplyr::mutate(sig = dplyr::if_else(
+      sig == "3",sig_text[4], sig))
+  df$sig <- factor(df$sig, levels = sig_text )
+  color_pallete <- viridis::viridis(4)
+  names(color_pallete) <- sig_text
   p <- df %>%
     ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
     ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5 ) +
@@ -845,23 +862,20 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
     ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5 ) +
     ggplot2::geom_point( ggplot2::aes( color = sig ) ) +
     ggplot2::scale_color_manual(
-      values = c(`0` = color_pallete[1],
-                 `1` = color_pallete[2],
-                 `2` = color_pallete[2],
-                 `3` = color_pallete[3])
+      values = color_pallete
     ) +
     ggrepel::geom_text_repel(
-      data = dplyr::filter(df, sig %in% "3" ),
+      data = dplyr::filter(df, sig %in% sig_text[4] ),
       ggplot2::aes(label = gene)
     ) +
     ggplot2::scale_x_continuous(
       breaks = breaks_x, limits = base::range(breaks_x * 1.1)) +
     ggplot2::scale_y_continuous(
       breaks = breaks_y, limits = base::range(breaks_y)) +
-    #ggplot2::expand_limits(x = c(-limits_x,limits_x)) +
-    #ggplot2::expand_limits(y = c(0,5)) +
-    #ggplot2::coord_fixed() +
-    ggpubr::theme_pubr()
+    ggpubr::theme_pubr() +
+    ggplot2::xlab(~Log[2]~"(FC)") +
+    ggplot2::ylab(~-Log[10]~"(p-value)") +
+    ggplot2::labs( color = " ")
   p
 }
 #' Plot GSEA Enrichment Curve and Table
@@ -986,18 +1000,25 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
 #'
 #' @export
 #'
-#res_list <- list(de_res_rio_2013,de_res_rio_2015,de_res_bot_2014,de_res_neo_2014)
-#filename = "plots/deg_venn_diagram.pdf";width = 9; height = NULL
 plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
                               filename, width = 9, height = NULL){
-  file_extension <- filename %>% stringr::str_extract("\\.[a-zA-Z]*$")
+  file_extension <- filename %>%
+    stringr::str_extract("\\.[a-zA-Z]*$")
   if (!isTRUE(identical(file_extension, ".pdf"))){
-    ## remove to introduce another extensions
+    # remove to introduce another extensions
     stop("filename is not PDF")
   }
   res_list <- list(...)
+  if (isTRUE(length(res_list) == 1)) {
+    if (!is.list(res_list)){
+      stop("can't plot a venn diagram for one group")
+    }
+  }
+  if (!is.null(names(res_list))){
+    names <- names(res_list)
+  }
   if (is.null(names)){
-    ##
+
   } else{
     if ( isTRUE(identical(length(res_list), length(names)))) {
       names(res_list) <- names
