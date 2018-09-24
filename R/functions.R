@@ -4,7 +4,7 @@
 
 # quiets concerns of R CMD check re: the .'s that appear in pipelines
 # reference: https://github.com/jennybc/googlesheets/blob/master/R/googlesheets.R
-if (getRversion() >= "2.15.1")  utils::globalVariables(c("."))
+if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 ## To test if a suggested package is installed:
 
@@ -68,54 +68,60 @@ import_tx <- function(path,
                       accession = "vectorbase",
                       is_dir = TRUE,
                       names = NULL,
-                      gene_table = NULL
-                      ){
+                      gene_table = NULL) {
   ## Function used to import transcripts abundance data
   if (isTRUE(source == "salmon")) {
-    path_to_files <- c(fs::path(fs::dir_ls(path), "quant.sf"),
-                       fs::path(path, "quant.sf"))
+    path_to_files <- c(
+      fs::path(fs::dir_ls(path), "quant.sf"),
+      fs::path(path, "quant.sf")
+    )
     path_to_files <- path_to_files[fs::file_exists(path_to_files) == TRUE]
   }
   message("Using files:\n", paste(path_to_files, collapse = "\n"), "\n")
-  if (!is.null(names)){
-    if (isTRUE(length(names) == length(path_to_files) )) {
+  if (!is.null(names)) {
+    if (isTRUE(length(names) == length(path_to_files))) {
       names(path_to_files) <- names
     } else {
       stop("Number of names (sample names) should be the same as files to read.")
     }
-  } else{
+  } else {
     names(path_to_files) <- path_to_files %>%
       stringr::str_extract("/(.*)/") %>%
       stringr::str_remove("/$") %>%
       stringr::str_remove(".*/")
   }
   tx_accession <- readr::read_delim(
-      path_to_files[1], "\t", escape_double = FALSE, trim_ws = TRUE
-    ) %>%
+    path_to_files[1], "\t",
+    escape_double = FALSE, trim_ws = TRUE
+  ) %>%
     dplyr::pull(`Name`)
-  if (isTRUE(accession == "vectorbase")){
+  if (isTRUE(accession == "vectorbase")) {
     gene_vectorbase <- tx_accession %>% stringr::str_remove("-R.*")
     tx_to_gene <- dplyr::data_frame(
       "TXNAME" = tx_accession,
-      "GENEID" = gene_vectorbase)
+      "GENEID" = gene_vectorbase
+    )
   }
-  if (isTRUE(accession == "gene")){
+  if (isTRUE(accession == "gene")) {
     tx_to_gene <- dplyr::data_frame(
       "TXNAME" = tx_accession,
-      "GENEID" = tx_accession)
+      "GENEID" = tx_accession
+    )
   }
-  if (isTRUE(accession == "custom" )){
+  if (isTRUE(accession == "custom")) {
     tx_custom <- gene_table %>%
       dplyr::pull(1)
     gene_custom <- gene_table %>%
       dplyr::pull(2)
     tx_to_gene <- dplyr::data_frame(
       "TXNAME" = tx_custom,
-      "GENEID" = gene_custom)
+      "GENEID" = gene_custom
+    )
   }
   tx <- tximport::tximport(path_to_files,
-                           type = source,
-                           tx2gene = tx_to_gene)
+    type = source,
+    tx2gene = tx_to_gene
+  )
   tx
 }
 
@@ -131,18 +137,20 @@ import_tx <- function(path,
 #'
 #' @export
 #'
-#path <- "data/salmon/res_quants/"
+# path <- "data/salmon/res_quants/"
 salmon_libtype <- function(path) {
   files <- list.files(path)
   files %>%
-    purrr::map_df( ~{
-    lib_name <- .x
-    lib_type <- paste0(path, "/", lib_name, "/lib_format_counts.json") %>%
-      jsonlite::read_json() %>%
-      .$`expected_format`
-    dplyr::data_frame(lib, lib_type)
-  },
-  path)
+    purrr::map_df(
+      ~{
+        lib_name <- .x
+        lib_type <- paste0(path, "/", lib_name, "/lib_format_counts.json") %>%
+          jsonlite::read_json() %>%
+          .$`expected_format`
+        dplyr::data_frame(lib, lib_type)
+      },
+      path
+    )
 }
 
 #' Retrieve Mapping Rate
@@ -158,7 +166,7 @@ salmon_libtype <- function(path) {
 #'
 #' @export
 #'
-retrieve_mapping_rate <- function( path ) {
+retrieve_mapping_rate <- function(path) {
   libs <- list.files(path)
   purrr::map_df(libs, ~{
     salmon_log <- readr::read_lines(paste0(path, "/", .x, "/logs/salmon_quant.log"))
@@ -198,16 +206,16 @@ retrieve_mapping_rate <- function( path ) {
 #'
 #' @export
 #'
-#tx <- imported_transcripts;sample_table <- metadata_df;var_column <- "population";var_levels <- c("Botucatu2014", "Rio2013")
+# tx <- imported_transcripts;sample_table <- metadata_df;var_column <- "population";var_levels <- c("Botucatu2014", "Rio2013")
 filter_tx <- function(tx, sample_table, var_column = NULL, var_levels = NULL) {
   first_column <- colnames(sample_table)[1]
-  if (!is.null(var_levels)){
+  if (!is.null(var_levels)) {
     extracted_cols <- sample_table %>%
-      dplyr::filter( (!!as.name(var_column)) %in% var_levels) %>%
+      dplyr::filter((!!as.name(var_column)) %in% var_levels) %>%
       dplyr::select(1) %>%
-      dplyr::filter( (!!as.name(first_column)) %in% colnames(tx$counts) ) %>%
+      dplyr::filter((!!as.name(first_column)) %in% colnames(tx$counts)) %>%
       unlist()
-  } else{
+  } else {
     extracted_cols <- sample_table %>%
       dplyr::select(1) %>%
       unlist()
@@ -246,25 +254,26 @@ filter_tx <- function(tx, sample_table, var_column = NULL, var_levels = NULL) {
 #'
 #' @export
 #'
-#tx <- tx_rio_2013; sample_table = metadata_df = samples_metadata
-#contrast_var <- "condition"; numerator <- "resistant"; denominator <- "susceptible"
+# tx <- tx_rio_2013; sample_table = metadata_df = samples_metadata
+# contrast_var <- "condition"; numerator <- "resistant"; denominator <- "susceptible"
 de_analysis <- function(tx, sample_table, contrast_var,
                         numerator, denominator,
                         batch_var = NULL,
                         beta_prior = TRUE,
-                        force_rep = FALSE){
-  lib_names <- colnames( tx$counts )
+                        force_rep = FALSE) {
+  lib_names <- colnames(tx$counts)
   var_column <- colnames(sample_table[1])
   sample_table <- sample_table %>%
-    dplyr::filter( !!as.name(var_column) %in% lib_names )
-  if (is.null(batch_var)){
+    dplyr::filter(!!as.name(var_column) %in% lib_names)
+  if (is.null(batch_var)) {
     design_formula <- as.formula(paste0("~", contrast_var))
-  } else{
+  } else {
     design_formula <- as.formula(paste0("~", batch_var, " + ", contrast_var))
   }
   dds1 <- DESeq2::DESeqDataSetFromTximport(tx,
-                                           sample_table,
-                                           design = design_formula)
+    sample_table,
+    design = design_formula
+  )
 
   number_of_numerator_samples <- sample_table %>%
     dplyr::filter(!!as.name(contrast_var) == numerator) %>%
@@ -281,11 +290,13 @@ de_analysis <- function(tx, sample_table, contrast_var,
   }
 
   ## START Experimental
-  if (isTRUE(force_rep)){
+  if (isTRUE(force_rep)) {
     dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
-    res <- DESeq2::results(dds, alpha = 0.05,
-                           contrast = c(contrast_var, numerator, denominator))
-    if (!isTRUE("data.frame" %in% class(res))){
+    res <- DESeq2::results(dds,
+      alpha = 0.05,
+      contrast = c(contrast_var, numerator, denominator)
+    )
+    if (!isTRUE("data.frame" %in% class(res))) {
       res <- res %>%
         base::as.data.frame() %>%
         dplyr::as_tibble(rownames = "gene")
@@ -293,19 +304,24 @@ de_analysis <- function(tx, sample_table, contrast_var,
     return(res)
   }
   ## END Experimental
-  if (isTRUE(sample_replicates)){
-    if (isTRUE(beta_prior)){
+  if (isTRUE(sample_replicates)) {
+    if (isTRUE(beta_prior)) {
       dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
-      res <- DESeq2::results(dds, alpha = 0.05,
-                             contrast = c(contrast_var, numerator, denominator))
-    } else{
+      res <- DESeq2::results(dds,
+        alpha = 0.05,
+        contrast = c(contrast_var, numerator, denominator)
+      )
+    } else {
       dds <- DESeq2::DESeq(dds1, betaPrior = FALSE)
-      res <- DESeq2::lfcShrink(dds, parallel = TRUE,
-                               coef = paste0(
-                                 contrast_var, "_",
-                                 numerator,
-                                 "_vs_", denominator),
-                               type = "apeglm")
+      res <- DESeq2::lfcShrink(dds,
+        parallel = TRUE,
+        coef = paste0(
+          contrast_var, "_",
+          numerator,
+          "_vs_", denominator
+        ),
+        type = "apeglm"
+      )
     }
   } else {
     numerator_name <- sample_table %>%
@@ -318,21 +334,22 @@ de_analysis <- function(tx, sample_table, contrast_var,
     res <- tx$abundance %>%
       dplyr::as_tibble(rownames = "gene") %>%
       dplyr::mutate(`FC` = !!as.name(numerator_name) /
-                      !!as.name(denominator_name)) %>%
-      dplyr::arrange( -`FC` ) %>%
+        !!as.name(denominator_name)) %>%
+      dplyr::arrange(-`FC`) %>%
       dplyr::mutate(`log2FoldChange` = log2(`FC`)) %>%
       dplyr::mutate(
         log2FoldChange = dplyr::if_else(
-          is.finite(`log2FoldChange`), `log2FoldChange`, NA_real_)
+          is.finite(`log2FoldChange`), `log2FoldChange`, NA_real_
+        )
       ) %>%
       dplyr::mutate(pvalue = NA_real_) %>%
       dplyr::mutate(padj = NA_real_) %>%
-      dplyr::select( -(!!numerator_name)) %>%
+      dplyr::select(-(!!numerator_name)) %>%
       dplyr::select(-(!!denominator_name)) %>%
-      dplyr::select( -`FC` ) %>%
+      dplyr::select(-`FC`) %>%
       dplyr::arrange(`gene`)
   }
-  if (!isTRUE("data.frame" %in% class(res))){
+  if (!isTRUE("data.frame" %in% class(res))) {
     res <- res %>%
       base::as.data.frame() %>%
       dplyr::as_tibble(rownames = "gene")
@@ -357,12 +374,12 @@ de_analysis <- function(tx, sample_table, contrast_var,
 #'
 #' @export
 #'
-#de_res <- de_res_rio2013
-#gene_sets <- aaegdata::kegg_gene_sets
+# de_res <- de_res_rio2013
+# gene_sets <- aaegdata::kegg_gene_sets
 gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
   de_res %>%
     dplyr::mutate(
-      log2FoldChange = dplyr::if_else(is.na(log2FoldChange), 0, log2FoldChange )
+      log2FoldChange = dplyr::if_else(is.na(log2FoldChange), 0, log2FoldChange)
     )
   sorted_res <- de_res %>%
     dplyr::select(gene, log2FoldChange) %>%
@@ -381,20 +398,22 @@ gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
       base::as.data.frame() %>%
       .[, gene_set_col]
     gene_sets <- gene_sets_list
-    if (!is.list(gene_sets)){
+    if (!is.list(gene_sets)) {
       if (file_ext == "gmt") {
         gene_sets <- fgsea::gmtPathways(gene_sets)
       } else {
-        if ( file_ext == "rds") {
+        if (file_ext == "rds") {
           gene_sets <- readr::read_rds(gene_sets)
         }
       }
     }
   }
   gene_sets <- purrr::map(gene_sets, unique)
-  gsea_res <- fgsea::fgsea(pathways = gene_sets,
-               stats = ranked_genes,
-               nperm = 100000)
+  gsea_res <- fgsea::fgsea(
+    pathways = gene_sets,
+    stats = ranked_genes,
+    nperm = 100000
+  )
   gsea_res <- gsea_res %>%
     dplyr::as_tibble() %>%
     dplyr::rename(pvalue = pval)
@@ -413,7 +432,7 @@ gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
 #'
 #' @export
 #'
-le_analysis <- function(gsea_res, set){
+le_analysis <- function(gsea_res, set) {
   gsea_res %>%
     tidyr::unnest() %>%
     dplyr::filter(pathway == set) %>%
@@ -437,14 +456,14 @@ le_analysis <- function(gsea_res, set){
 #'
 #' @export
 #'
-retrieve_deg <- function(de_res, pvalue = 0.05, fdr = FALSE){
+retrieve_deg <- function(de_res, pvalue = 0.05, fdr = FALSE) {
   alpha <- pvalue
   if (!isTRUE("data.frame" %in% class(de_res))) {
     de_res <- de_res %>%
       base::as.data.frame() %>%
       dplyr::as_tibble(rownames = "gene")
   }
-  if ( isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     deg_genes <- de_res %>%
       dplyr::filter(padj <= alpha) %>%
       dplyr::pull(gene)
@@ -490,51 +509,51 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
                          num = NULL, scale = "row",
                          show_rownames = FALSE, ...) {
   expression_matrix <- txomics::prepare_tx_mat(tx)
-  if ( is.null(num) ) {
+  if (is.null(num)) {
     num <- nrow(expression_matrix)
   }
   mat <- expression_matrix[base::rowSums(expression_matrix) > 1, ]
   ## Scaling matrix
-  if (scale == "row"){
+  if (scale == "row") {
     mat <- base::t(base::scale(base::t(mat), center = TRUE, scale = TRUE))
-  }else{
-    if (scale == "column"){
+  } else {
+    if (scale == "column") {
       mat <- base::scale(mat, center = TRUE, scale = TRUE)
     }
   }
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
+    dplyr::mutate(row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var)
-  if ( isTRUE(num > 0) ) {
+  if (isTRUE(num > 0)) {
     filtered_mat <- filtered_mat %>%
       utils::head(num)
   }
-  if ( isTRUE(num < 0) ) {
+  if (isTRUE(num < 0)) {
     num <- abs(num)
     filtered_mat <- filtered_mat %>%
       utils::tail(num)
   }
-  if ( isTRUE(num == 0) ) {
+  if (isTRUE(num == 0)) {
     stop("Number of genes can't be zero.")
   }
   filtered_mat <- filtered_mat %>%
-    dplyr::select( -row_var)
+    dplyr::select(-row_var)
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
     as.matrix()
   rownames(mat) <- filtered_mat$gene
-  if ( is.null(color_by) ) {
+  if (is.null(color_by)) {
     annotation_df <- NA
     annotation_pallete <- NA
   } else {
     annotation_df <- sample_table %>%
-      dplyr::select( 1, !!color_by )
+      dplyr::select(1, !!color_by)
     row_names <- annotation_df %>% dplyr::pull(1)
     annotation_df <- annotation_df %>%
-      dplyr::select( -1 ) %>%
+      dplyr::select(-1) %>%
       base::as.data.frame()
-    base::rownames(annotation_df) <-  row_names
+    base::rownames(annotation_df) <- row_names
     ## Generate Annotation discrete color pallette
     df_names <- colnames(annotation_df)
     df_lengths <- df_names %>%
@@ -549,7 +568,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
       }
     )
     names(annotation_pallete) <- df_names
-    for ( i in colnames(annotation_df)){
+    for (i in colnames(annotation_df)) {
       names(annotation_pallete[[i]]) <- unique(annotation_df[, i])
     }
   }
@@ -567,13 +586,15 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     value = "draw_colnames_45",
     ns = asNamespace("pheatmap")
   )
-  if (!isTRUE(scale == "none")){
-    color_function <- function(){
-      grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(n = 7, name =
-                                                                 "PRGn")))(100)
+  if (!isTRUE(scale == "none")) {
+    color_function <- function() {
+      grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(
+        n = 7, name =
+          "PRGn"
+      )))(100)
     }
-  } else{
-    color_function <- function(){
+  } else {
+    color_function <- function() {
       viridis::viridis(100, direction = 1)
     }
   }
@@ -590,7 +611,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
     cluster_cols = mat_cluster_cols,
     cluster_rows = mat_cluster_rows,
     ...
-    )
+  )
 }
 #' Plot Flat Three Dimensional PCA
 #'
@@ -618,7 +639,7 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 plot_pca <- function(tx, sample_table,
                      color_by = NULL, num = NULL) {
   expression_matrix <- txomics::prepare_tx_mat(tx)
-  if ( is.null(num) ) {
+  if (is.null(num)) {
     num <- nrow(expression_matrix)
   }
   mat <- expression_matrix[rowSums(expression_matrix) > 1, ]
@@ -627,22 +648,22 @@ plot_pca <- function(tx, sample_table,
 
   filtered_mat <- mat %>%
     dplyr::as_data_frame(rownames = "gene") %>%
-    dplyr::mutate( row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
+    dplyr::mutate(row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var)
-  if ( isTRUE(num > 0) ) {
+  if (isTRUE(num > 0)) {
     filtered_mat <- filtered_mat %>%
       utils::head(num)
   }
-  if ( isTRUE(num < 0) ) {
+  if (isTRUE(num < 0)) {
     num <- abs(num)
     filtered_mat <- filtered_mat %>%
       utils::tail(num)
   }
-  if ( isTRUE(num == 0) ) {
+  if (isTRUE(num == 0)) {
     stop("Number of genes can't be zero.")
   }
   filtered_mat <- filtered_mat %>%
-    dplyr::select( -row_var)
+    dplyr::select(-row_var)
   mat <- filtered_mat %>%
     dplyr::select(-gene) %>%
     base::as.matrix()
@@ -652,7 +673,7 @@ plot_pca <- function(tx, sample_table,
     base::t() %>%
     stats::prcomp()
 
-  var_percent <- pca$sdev ^ 2 / base::sum(pca$sdev ^ 2)
+  var_percent <- pca$sdev^2 / base::sum(pca$sdev^2)
 
   pc_1 <- pca$x[, 1]
   pc_1_df <- dplyr::data_frame(
@@ -678,69 +699,90 @@ plot_pca <- function(tx, sample_table,
     breaks_x <- base::pretty(df$value)
     breaks_y <- base::pretty(df$PC1)
     plot_obj <- df %>%
-      ggplot2::ggplot( ggplot2::aes(x = value, y = PC1, color = sample)) +
+      ggplot2::ggplot(ggplot2::aes(x = value, y = PC1, color = sample)) +
       ggplot2::geom_point(size = 4) +
-      ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance",
-                           "\t  PC3: ", round(var_percent[3] * 100),
-                           "% variance")) +
-      ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100),
-                           "% variance")) +
+      ggplot2::xlab(paste0(
+        "PC2: ", round(var_percent[2] * 100), "% variance",
+        "\t  PC3: ", round(var_percent[3] * 100),
+        "% variance"
+      )) +
+      ggplot2::ylab(paste0(
+        "PC1: ", round(var_percent[1] * 100),
+        "% variance"
+      )) +
       ggplot2::facet_grid(cols = ggplot2::vars(pcomp), scales = "free") +
-      ggplot2::scale_color_viridis_d( direction = 1 ) +
-      ggplot2::annotate("segment", x = -Inf, xend = -Inf,
-                        y = -Inf, yend = Inf, color = "black") +
-      ggplot2::annotate("segment", x = -Inf, xend = -Inf,
-                        y = -Inf, yend = Inf, color = "black") +
+      ggplot2::scale_color_viridis_d(direction = 1) +
+      ggplot2::annotate("segment",
+        x = -Inf, xend = -Inf,
+        y = -Inf, yend = Inf, color = "black"
+      ) +
+      ggplot2::annotate("segment",
+        x = -Inf, xend = -Inf,
+        y = -Inf, yend = Inf, color = "black"
+      ) +
       ggpubr::theme_pubr() +
       ggplot2::theme(
         strip.background = ggplot2::element_blank(),
-        strip.text.x = ggplot2::element_blank()) +
-      ggplot2::scale_x_continuous(breaks = breaks_x,
-                                  limits = base::range(breaks_x)) +
-      ggplot2::scale_y_continuous(breaks = breaks_y,
-                                  limits = base::range(breaks_y))
+        strip.text.x = ggplot2::element_blank()
+      ) +
+      ggplot2::scale_x_continuous(
+        breaks = breaks_x,
+        limits = base::range(breaks_x)
+      ) +
+      ggplot2::scale_y_continuous(
+        breaks = breaks_y,
+        limits = base::range(breaks_y)
+      )
     return(plot_obj)
   }
   if (!isTRUE(all(color_by %in% names(sample_table)))) {
     stop("the values of 'color_by' should specify columns of sample_table metadata")
   }
   group_df <- sample_table %>%
-    dplyr::select( sample, !!color_by )
+    dplyr::select(sample, !!color_by)
 
   df <- pc_1_df %>%
     dplyr::left_join(pc_2_df, by = "sample") %>%
     dplyr::left_join(pc_3_df, by = "sample") %>%
     tidyr::gather(pcomp, value, -c(sample, PC1)) %>%
     dplyr::left_join(group_df, by = "sample") %>%
-    tidyr::unite( group, !!color_by )
+    tidyr::unite(group, !!color_by)
 
   breaks_x <- base::pretty(df$value)
   breaks_y <- base::pretty(df$PC1)
   df %>%
-    ggplot2::ggplot( ggplot2::aes(x = value, y = PC1, color = group)) +
-      ggplot2::geom_point(size = 4) +
-      ggplot2::xlab(paste0(
-        "PC2: ", round(var_percent[2] * 100), "% variance",
-        "\t\t\t\t  PC3: ", round(var_percent[3] * 100), "% variance")) +
-      ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100),
-                           "% variance")) +
-      ggplot2::facet_grid(cols = ggplot2::vars(pcomp), scales = "free") +
-      ggplot2::scale_color_viridis_d( direction = 1 ) +
-      ggplot2::annotate("segment", x = -Inf, xend = -Inf,
-                        y = -Inf, yend = Inf, color = "black") +
-      ggplot2::annotate("segment", x = -Inf, xend = -Inf,
-                        y = -Inf, yend = Inf, color = "black") +
-      ggpubr::theme_pubr() +
-      #ggplot2::coord_fixed() +
-      ggplot2::theme(
-        strip.background = ggplot2::element_blank(),
-        strip.text.x = ggplot2::element_blank()) +
-      ggplot2::scale_x_continuous(breaks = breaks_x, limits = base::range(breaks_x)) +
-      ggplot2::scale_y_continuous(breaks = breaks_y, limits = base::range(breaks_y))
-    #ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance")) +
-    #  ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
-    #  ggplot2::scale_color_viridis_d( direction = 1 ) +
-    #  ggpubr::theme_pubr()
+    ggplot2::ggplot(ggplot2::aes(x = value, y = PC1, color = group)) +
+    ggplot2::geom_point(size = 4) +
+    ggplot2::xlab(paste0(
+      "PC2: ", round(var_percent[2] * 100), "% variance",
+      "\t\t\t\t  PC3: ", round(var_percent[3] * 100), "% variance"
+    )) +
+    ggplot2::ylab(paste0(
+      "PC1: ", round(var_percent[1] * 100),
+      "% variance"
+    )) +
+    ggplot2::facet_grid(cols = ggplot2::vars(pcomp), scales = "free") +
+    ggplot2::scale_color_viridis_d(direction = 1) +
+    ggplot2::annotate("segment",
+      x = -Inf, xend = -Inf,
+      y = -Inf, yend = Inf, color = "black"
+    ) +
+    ggplot2::annotate("segment",
+      x = -Inf, xend = -Inf,
+      y = -Inf, yend = Inf, color = "black"
+    ) +
+    ggpubr::theme_pubr() +
+    # ggplot2::coord_fixed() +
+    ggplot2::theme(
+      strip.background = ggplot2::element_blank(),
+      strip.text.x = ggplot2::element_blank()
+    ) +
+    ggplot2::scale_x_continuous(breaks = breaks_x, limits = base::range(breaks_x)) +
+    ggplot2::scale_y_continuous(breaks = breaks_y, limits = base::range(breaks_y))
+  # ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance")) +
+  #  ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
+  #  ggplot2::scale_color_viridis_d( direction = 1 ) +
+  #  ggpubr::theme_pubr()
 }
 #' Volcano Plot
 #'
@@ -760,8 +802,8 @@ plot_pca <- function(tx, sample_table,
 #'
 #' @export
 #'
-plot_volcano <- function(de_res, pvalue  = 0.05,
-                         lfc_threshold = NULL, fdr = FALSE ) {
+plot_volcano <- function(de_res, pvalue = 0.05,
+                         lfc_threshold = NULL, fdr = FALSE) {
   # scatter_plot <- function(data, x, y) {
   #   x <- enquo(x)
   #   y <- enquo(y)
@@ -771,45 +813,46 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
   # scatter_plot(mtcars, disp, drat)
   alpha <- pvalue
   pvalue_var <- dplyr::quo(pvalue)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
   df <- de_res %>%
     dplyr::select(gene, log2FoldChange, pvalue, padj)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     df <- df %>%
       dplyr::filter(!is.na(padj)) %>%
-      dplyr::mutate(sig_alpha = dplyr::if_else( padj < alpha, 1, 0 ) )
+      dplyr::mutate(sig_alpha = dplyr::if_else(padj < alpha, 1, 0))
   } else {
     df <- df %>%
       dplyr::filter(!is.na(pvalue)) %>%
-      dplyr::mutate(sig_alpha = dplyr::if_else( pvalue < alpha, 1, 0 ) )
+      dplyr::mutate(sig_alpha = dplyr::if_else(pvalue < alpha, 1, 0))
   }
   if (is.null(lfc_threshold)) {
-    if ( isTRUE(base::nrow(dplyr::filter(df, sig_alpha == 1 )) == 0 ) ){
+    if (isTRUE(base::nrow(dplyr::filter(df, sig_alpha == 1)) == 0)) {
       lfc_cutoff <- 2
-    } else{
+    } else {
       lfc_cutoff <- df %>%
         dplyr::filter(sig_alpha == 1) %>%
         dplyr::pull(log2FoldChange) %>%
         abs() %>%
         max()
     }
-  } else{
+  } else {
     lfc_cutoff <- lfc_threshold
   }
   df <- df %>%
-    dplyr::mutate( sig_lfc = dplyr::if_else(
-      abs(log2FoldChange) >= lfc_cutoff, 2, 0 ) )
+    dplyr::mutate(sig_lfc = dplyr::if_else(
+      abs(log2FoldChange) >= lfc_cutoff, 2, 0
+    ))
   df <- df %>%
     dplyr::mutate(sig = as.character(sig_alpha + sig_lfc)) %>%
     dplyr::select(-c(sig_alpha, sig_lfc)) %>%
     dplyr::filter(!is.na(log2FoldChange))
   pvalue_line <- alpha
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_line <- df %>%
       dplyr::filter(padj < alpha)
-    if ( isTRUE( nrow(pvalue_line) == 0 ) ) {
+    if (isTRUE(nrow(pvalue_line) == 0)) {
       pvalue_line <- df %>%
         dplyr::pull(pvalue) %>%
         base::min()
@@ -819,63 +862,76 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
         base::max()
     }
   }
-  if ( isTRUE(max(abs(df$log2FoldChange)) <= abs(lfc_cutoff)) ){
+  if (isTRUE(max(abs(df$log2FoldChange)) <= abs(lfc_cutoff))) {
     breaks_x <- base::pretty(base::range(-lfc_cutoff, lfc_cutoff))
-  } else{
+  } else {
     breaks_x <- base::pretty(df$log2FoldChange)
   }
-  if ( isTRUE(max(-log10(df$pvalue)) <= 4) ) {
+  if (isTRUE(max(-log10(df$pvalue)) <= 4)) {
     range_y <- c(0, 4)
-  } else{
+  } else {
     range_y <- -log10(df$pvalue)
   }
   breaks_y <- base::pretty(range_y)
   pvalue_cutoff <- pvalue
   sig_text <- c(
-    paste0(as.character(pvalue_var)[2],
-           " > ", as.character(pvalue_cutoff)),
-    paste0(as.character(pvalue_var)[2],
-           " <= ", as.character(pvalue_cutoff)),
-    paste0("abs(log2FC) > ",
-           as.character(lfc_cutoff)),
+    paste0(
+      as.character(pvalue_var)[2],
+      " > ", as.character(pvalue_cutoff)
+    ),
+    paste0(
+      as.character(pvalue_var)[2],
+      " <= ", as.character(pvalue_cutoff)
+    ),
+    paste0(
+      "abs(log2FC) > ",
+      as.character(lfc_cutoff)
+    ),
     paste0(
       as.character(pvalue_var)[2], " <= ",
       as.character(pvalue_cutoff), " & ",
-      "abs(log2FC) >= ", as.character(lfc_cutoff))
+      "abs(log2FC) >= ", as.character(lfc_cutoff)
+    )
   )
   df <- df %>%
     dplyr::mutate(sig = dplyr::if_else(
-      sig == "0", sig_text[1], sig)) %>%
+      sig == "0", sig_text[1], sig
+    )) %>%
     dplyr::mutate(sig = dplyr::if_else(
-      sig == "1",sig_text[2], sig)) %>%
+      sig == "1", sig_text[2], sig
+    )) %>%
     dplyr::mutate(sig = dplyr::if_else(
-      sig == "2",sig_text[3], sig)) %>%
+      sig == "2", sig_text[3], sig
+    )) %>%
     dplyr::mutate(sig = dplyr::if_else(
-      sig == "3",sig_text[4], sig))
-  df$sig <- factor(df$sig, levels = sig_text )
+      sig == "3", sig_text[4], sig
+    ))
+  df$sig <- factor(df$sig, levels = sig_text)
   color_pallete <- viridis::viridis(4)
   names(color_pallete) <- sig_text
   p <- df %>%
-    ggplot2::ggplot( ggplot2::aes(log2FoldChange, -log10(pvalue)) ) +
-    ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5 ) +
-    ggplot2::geom_vline(xintercept = lfc_cutoff, alpha = 0.5 ) +
-    ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5 ) +
-    ggplot2::geom_point( ggplot2::aes( color = sig ) ) +
+    ggplot2::ggplot(ggplot2::aes(log2FoldChange, -log10(pvalue))) +
+    ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5) +
+    ggplot2::geom_vline(xintercept = lfc_cutoff, alpha = 0.5) +
+    ggplot2::geom_vline(xintercept = -lfc_cutoff, alpha = 0.5) +
+    ggplot2::geom_point(ggplot2::aes(color = sig)) +
     ggplot2::scale_color_manual(
       values = color_pallete
     ) +
     ggrepel::geom_text_repel(
-      data = dplyr::filter(df, sig %in% sig_text[4] ),
+      data = dplyr::filter(df, sig %in% sig_text[4]),
       ggplot2::aes(label = gene)
     ) +
     ggplot2::scale_x_continuous(
-      breaks = breaks_x, limits = base::range(breaks_x * 1.1)) +
+      breaks = breaks_x, limits = base::range(breaks_x * 1.1)
+    ) +
     ggplot2::scale_y_continuous(
-      breaks = breaks_y, limits = base::range(breaks_y)) +
+      breaks = breaks_y, limits = base::range(breaks_y)
+    ) +
     ggpubr::theme_pubr() +
-    ggplot2::xlab(~Log[2]~"(FC)") +
-    ggplot2::ylab(~-Log[10]~"(p-value)") +
-    ggplot2::labs( color = " ")
+    ggplot2::xlab(~Log[2] ~ "(FC)") +
+    ggplot2::ylab(~-Log[10] ~ "(p-value)") +
+    ggplot2::labs(color = " ")
   p
 }
 #' Plot GSEA Enrichment Curve and Table
@@ -906,8 +962,8 @@ plot_volcano <- function(de_res, pvalue  = 0.05,
 #'
 #' @export
 #'
-#gsea_res <- gsea_res_batch; de_res <- de_res_rio_2013; gene_sets <- aaegdata::kegg_gene_sets;
-#top_sets <- 10; enrichment <- FALSE; title = TRUE
+# gsea_res <- gsea_res_batch; de_res <- de_res_rio_2013; gene_sets <- aaegdata::kegg_gene_sets;
+# top_sets <- 10; enrichment <- FALSE; title = TRUE
 plot_gsea <- function(gsea_res, de_res, gene_sets,
                       top_sets = 10, enrichment = FALSE,
                       title = NULL) {
@@ -929,11 +985,11 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
       base::as.data.frame() %>%
       .[, gene_set_col]
     gene_sets <- gene_sets_list
-    if (!is.list(gene_sets)){
+    if (!is.list(gene_sets)) {
       if (file_ext == "gmt") {
         gene_sets <- fgsea::gmtPathways(gene_sets)
       } else {
-        if ( file_ext == "rds") {
+        if (file_ext == "rds") {
           gene_sets <- readr::read_rds(gene_sets)
         }
       }
@@ -941,15 +997,17 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
   }
   gene_sets <- purrr::map(gene_sets, unique)
 
-  if (isTRUE(enrichment)){
-    if (isTRUE(title)){
+  if (isTRUE(enrichment)) {
+    if (isTRUE(title)) {
       title <- top_sets
     }
-    fgsea::plotEnrichment(gene_sets[[top_sets]],
-                          ranked_genes) +
+    fgsea::plotEnrichment(
+      gene_sets[[top_sets]],
+      ranked_genes
+    ) +
       ggplot2::labs(title = title) +
       ggpubr::theme_pubr()
-    #labs(title="Programmed Cell Death")
+    # labs(title="Programmed Cell Death")
   } else {
     top_paths_up <- gsea_res %>%
       dplyr::filter(ES > 0) %>%
@@ -965,9 +1023,9 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
       dplyr::rename(pval = pvalue)
     top_paths <- c(top_paths_up, rev(top_paths_down))
     fgsea::plotGseaTable(gene_sets[top_paths],
-                         ranked_genes,
-                         gsea_res,
-                         colwidths = c(9, 3, 0.8, 1.2, 1.2)
+      ranked_genes,
+      gsea_res,
+      colwidths = c(9, 3, 0.8, 1.2, 1.2)
     )
   }
 }
@@ -1001,28 +1059,28 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
 #' @export
 #'
 plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
-                              filename, width = 9, height = NULL){
+                              filename, width = 9, height = NULL) {
   file_extension <- filename %>%
     stringr::str_extract("\\.[a-zA-Z]*$")
-  if (!isTRUE(identical(file_extension, ".pdf"))){
+  if (!isTRUE(identical(file_extension, ".pdf"))) {
     # remove to introduce another extensions
     stop("filename is not PDF")
   }
   res_list <- list(...)
   if (isTRUE(length(res_list) == 1)) {
-    if (!is.list(res_list)){
+    if (!is.list(res_list)) {
       stop("can't plot a venn diagram for one group")
     }
   }
-  if (!is.null(names(res_list))){
+  if (!is.null(names(res_list))) {
     names <- names(res_list)
   }
-  if (is.null(names)){
+  if (is.null(names)) {
 
-  } else{
-    if ( isTRUE(identical(length(res_list), length(names)))) {
+  } else {
+    if (isTRUE(identical(length(res_list), length(names)))) {
       names(res_list) <- names
-    } else{
+    } else {
       stop("length of names should be the same of the objects passed to '...'")
     }
   }
@@ -1030,7 +1088,7 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
   file_name_svg <- paste0(file_path, ".svg")
 
   pvalue_var <- dplyr::quo(pvalue)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
   pvalue_cutoff <- pvalue
@@ -1043,7 +1101,7 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
   names(input_list) <- names
   output_height <- height
   output_width <- width
-  if (is.null(height)){
+  if (is.null(height)) {
     output_height <- width
   }
   venn_width <- min(output_height, output_width)
@@ -1052,9 +1110,11 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     filename = file_name_svg, imagetype = "svg",
     height = venn_width, width = venn_width, col = "transparent",
     fill = c("cornflowerblue", "green", "yellow", "darkorchid1"),
-    label.col = c("orange", "white", "darkorchid4", "white", "white",
-                  "white", "white", "white", "darkblue", "white", "white", "white", "white",
-                  "darkgreen", "white"),
+    label.col = c(
+      "orange", "white", "darkorchid4", "white", "white",
+      "white", "white", "white", "darkblue", "white", "white", "white", "white",
+      "darkgreen", "white"
+    ),
     fontfamily = "serif", fontface = "bold",
     cat.col = c("darkblue", "darkgreen", "orange", "darkorchid4"), cat.cex = 1.5,
     cat.pos = 0, cat.dist = 0.07, cat.fontfamily = "serif", alpha = 0.50, cex = 1.5,
@@ -1084,25 +1144,25 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 #'
 #' @export
 #'
-#gsea_res_list <- list(gsea_go_bot_2014,gsea_go_neo_2014,gsea_go_rio_2013,gsea_go_rio_2015)
+# gsea_res_list <- list(gsea_go_bot_2014,gsea_go_neo_2014,gsea_go_rio_2013,gsea_go_rio_2015)
 # pvalue = 0.2; fdr = TRUE; names = c("Botucatu 2014","Neopolis 2014","Rio 2013","Rio 2015")
 #  occurrence = NULL
 plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
-                              occurrence = NULL ) {
+                              occurrence = NULL) {
   gsea_res_list <- list(...)
   pvalue_cutoff <- pvalue
   sample_names <- names
   pvalue_var <- dplyr::quo(pvalue)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
-  if (is.null(occurrence)){
+  if (is.null(occurrence)) {
     occurrence <- length(gsea_res_list)
   }
   enriched_gene_sets <- gsea_res_list %>%
     purrr::map(~{
       .x %>%
-        dplyr::filter( !!pvalue_var < pvalue_cutoff) %>%
+        dplyr::filter(!!pvalue_var < pvalue_cutoff) %>%
         dplyr::pull(1)
     })
   enriched_vector <- enriched_gene_sets %>%
@@ -1115,7 +1175,7 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     dplyr::arrange(-occurrency)
 
   top_sets <- top_sets %>%
-    dplyr::filter(occurrency >= occurrence ) %>%
+    dplyr::filter(occurrency >= occurrence) %>%
     dplyr::pull(1)
 
   gene_set_var <- gsea_res_list[[1]] %>% colnames()
@@ -1125,8 +1185,8 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
   pvalue_df <- gsea_res_list %>%
     purrr::map2_df(sample_names, ~{
       .x %>%
-        dplyr::filter( !!gene_set_var %in% top_sets ) %>%
-        dplyr::select(1, !!pvalue_var ) %>%
+        dplyr::filter(!!gene_set_var %in% top_sets) %>%
+        dplyr::select(1, !!pvalue_var) %>%
         dplyr::mutate(sample_name = .y)
     })
 
@@ -1155,7 +1215,7 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
   )
 
   # Because -log10(0.001) = 3 and
-  #if p-value is smaller than 0.01, it's already much significant
+  # if p-value is smaller than 0.01, it's already much significant
   p_value_max <- 3
   # p_value_max <- max(mat)
 
@@ -1168,7 +1228,7 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     treeheight_row = 30,
     cluster_cols = mat_cluster_cols,
     cluster_rows = mat_cluster_rows,
-    breaks = seq( 0, p_value_max, (p_value_max / 100) )
+    breaks = seq(0, p_value_max, (p_value_max / 100))
   )
 }
 
@@ -1190,37 +1250,39 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 #'
 #' @export
 #'
-#tx=imported_expression;gene="AAEL000080";color_by="day"
-#tx <- imported_transcripts;gene <- "AAEL006469";sample_table <- samples_metadata;color_by_var <- "condition";
-plot_gene_expression <- function( gene, tx, sample_table = NULL,
-                                  color_by = NULL, filter = NULL ) {
-  if (isTRUE(is.list(tx))){
+# tx=imported_expression;gene="AAEL000080";color_by="day"
+# tx <- imported_transcripts;gene <- "AAEL006469";sample_table <- samples_metadata;color_by_var <- "condition";
+plot_gene_expression <- function(gene, tx, sample_table = NULL,
+                                 color_by = NULL, filter = NULL) {
+  if (isTRUE(is.list(tx))) {
     expr_df <- tx$abundance
   }
   metadata_df <- sample_table
-  if (is.null(sample_table)){
+  if (is.null(sample_table)) {
     metadata_df <- dplyr::data_frame()
-
   } else {
     sample_var <- metadata_df %>%
       dplyr::select(1) %>%
       names()
   }
-  if (!is.null(color_by)){
+  if (!is.null(color_by)) {
     color_by_var <- color_by
   }
   gene_query <- gene
   expr_df %>%
-    dplyr::as_tibble( rownames = "gene" ) %>%
-    dplyr::filter( gene %in% gene_query) %>%
+    dplyr::as_tibble(rownames = "gene") %>%
+    dplyr::filter(gene %in% gene_query) %>%
     tidyr::gather(sample, tpm, -gene) %>%
     dplyr::left_join(metadata_df, by = c("sample" = sample_var)) %>%
-    ggplot2::ggplot( ) +
+    ggplot2::ggplot() +
     ggplot2::geom_point(
-      ggplot2::aes(sample, tpm, color = !!as.name(color_by_var)), size = 3) +
+      ggplot2::aes(sample, tpm, color = !!as.name(color_by_var)),
+      size = 3
+    ) +
     ggpubr::theme_pubr() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(
-      angle = 45, hjust = 1, vjust = 1)) +
+      angle = 45, hjust = 1, vjust = 1
+    )) +
     ggplot2::scale_color_viridis_d()
 }
 
@@ -1241,36 +1303,44 @@ plot_gene_expression <- function( gene, tx, sample_table = NULL,
 plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
   pvalue_cutoff <- pvalue
   pvalue_var <- dplyr::quo(pvalue)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
   gsea_res_sig <- gsea_res %>%
-    dplyr::filter( !!pvalue_var < pvalue_cutoff )
+    dplyr::filter(!!pvalue_var < pvalue_cutoff)
   leading_edge_number <- c()
-  for (paths in gsea_res_sig$leadingEdge){
+  for (paths in gsea_res_sig$leadingEdge) {
     leading_edge_number <- c(leading_edge_number, length(paths))
   }
-  data <- dplyr::data_frame(gene_set = gsea_res_sig %>% dplyr::pull(1),
-                            NES = gsea_res_sig$NES,
-                            `Adjusted p-value` = gsea_res_sig %>%
-                              dplyr::pull( !!pvalue_var),
-                            `No of LE genes` = leading_edge_number)
+  data <- dplyr::data_frame(
+    gene_set = gsea_res_sig %>% dplyr::pull(1),
+    NES = gsea_res_sig$NES,
+    `Adjusted p-value` = gsea_res_sig %>%
+      dplyr::pull(!!pvalue_var),
+    `No of LE genes` = leading_edge_number
+  )
   # Plotting
   p <- ggplot2::ggplot(data, ggplot2::aes(NES, gene_set))
   p + ggplot2::geom_point(
-    ggplot2::aes(colour = `Adjusted p-value`, size = `No of LE genes`)) +
+    ggplot2::aes(colour = `Adjusted p-value`, size = `No of LE genes`)
+  ) +
     ggplot2::scale_color_gradientn(
-      colours = viridis::viridis(4, direction = -1), limits = c(0, 0.05)) +
+      colours = viridis::viridis(4, direction = -1), limits = c(0, 0.05)
+    ) +
     ggplot2::geom_vline(xintercept = 0, size = 0.5, colour = "gray50") +
     ggplot2::theme(
       panel.background = ggplot2::element_rect(
-        fill = "gray95", colour = "gray95"),
+        fill = "gray95", colour = "gray95"
+      ),
       panel.grid.major = ggplot2::element_line(
-        size = 0.25,linetype = 'solid', colour = "gray90"),
+        size = 0.25, linetype = "solid", colour = "gray90"
+      ),
       panel.grid.minor = ggplot2::element_line(
-        size = 0.25,linetype = 'solid', colour = "gray90"),
-      axis.title.y = ggplot2::element_blank()) +
-    ggplot2::expand_limits(x = c(-3,3)) +
+        size = 0.25, linetype = "solid", colour = "gray90"
+      ),
+      axis.title.y = ggplot2::element_blank()
+    ) +
+    ggplot2::expand_limits(x = c(-3, 3)) +
     ggplot2::scale_x_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3)) +
     ggplot2::scale_y_discrete(limits = rev(data$gene_set)) +
     ggpubr::theme_pubr()
@@ -1295,25 +1365,25 @@ plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
 #'
 #' @export
 #'
-multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
-  #library(grid)
+multiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
+  # library(grid)
 
   # Make a list from the ... arguments and plotlist
   plots <- c(base::list(...), plotlist)
 
   num_plots <- base::length(plots)
 
-    if (is.null(layout)) {
+  if (is.null(layout)) {
     # Make the panel
     # ncol: Number of columns of plots
     # nrow: Number of rows needed, calculated from # of cols
     layout <- base::matrix(seq(1, cols * base::ceiling(num_plots / cols)),
-                     ncol = cols, nrow = base::ceiling(num_plots / cols))
+      ncol = cols, nrow = base::ceiling(num_plots / cols)
+    )
   }
 
   if (num_plots == 1) {
     print(plots[[1]])
-
   } else {
     # Set up the page
     grid::grid.newpage()
@@ -1324,8 +1394,10 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
       # Get the i,j matrix positions of the regions that contain this subplot
       matchidx <- base::as.data.frame(base::which(layout == i, arr.ind = TRUE))
 
-      print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
-                                            layout.pos.col = matchidx$col))
+      print(plots[[i]], vp = grid::viewport(
+        layout.pos.row = matchidx$row,
+        layout.pos.col = matchidx$col
+      ))
     }
   }
 }
@@ -1360,13 +1432,14 @@ NULL
 #' @param gaps gaps
 #' @param ... additional parameters
 #' @export
-draw_colnames_45 <- function (coln, gaps, ...) {
+draw_colnames_45 <- function(coln, gaps, ...) {
   # Correct labels orientation, thanks to https://slowkow.com/notes/heatmap-tutorial/
   find_coordinates_temp <- utils::getFromNamespace("find_coordinates", "pheatmap")
   coord <- find_coordinates_temp(length(coln), gaps)
-  x     <- coord$coord - 0.5 * coord$size
-  res   <- grid::textGrob(
-    coln, x = x, y = grid::unit(1, "npc") - grid::unit(3, "bigpts"),
+  x <- coord$coord - 0.5 * coord$size
+  res <- grid::textGrob(
+    coln,
+    x = x, y = grid::unit(1, "npc") - grid::unit(3, "bigpts"),
     vjust = 0.75, hjust = 1, rot = 45, gp = grid::gpar(...)
   )
   return(res)
@@ -1380,7 +1453,7 @@ draw_colnames_45 <- function (coln, gaps, ...) {
 #' @param ... additional paramaters addressed to rowSums or rowMeans
 #' @export
 calc_var_by_row <- function(x, ...) {
-  base::rowSums( (x - base::rowMeans(x, ...)) ^ 2, ...) / (base::dim(x)[2] - 1)
+  base::rowSums((x - base::rowMeans(x, ...))^2, ...) / (base::dim(x)[2] - 1)
 }
 
 #' plot aux function 2
@@ -1388,9 +1461,9 @@ calc_var_by_row <- function(x, ...) {
 #' Prepare data for plotting PCA or Expression heatmap
 #' @param tx expression data or result from import_tx
 #' @export
-prepare_tx_mat <- function(tx){
-  if ( is.list(tx) ) {
-    if ( !dplyr::is.tbl(tx) & !is.data.frame(tx)){
+prepare_tx_mat <- function(tx) {
+  if (is.list(tx)) {
+    if (!dplyr::is.tbl(tx) & !is.data.frame(tx)) {
       expression_matrix <- tx$abundance
     } else {
       expression_matrix <- tx
@@ -1398,8 +1471,8 @@ prepare_tx_mat <- function(tx){
   } else {
     expression_matrix <- tx
   }
-  if (!is.matrix(expression_matrix)){
-    if (!isTRUE(all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix))))))){
+  if (!is.matrix(expression_matrix)) {
+    if (!isTRUE(all(!is.na(suppressWarnings(as.numeric(as.matrix(expression_matrix))))))) {
       temp_mat <- base::as.matrix(expression_matrix[, 2:length(expression_matrix)])
       base::rownames(temp_mat) <- expression_matrix %>%
         dplyr::pull(1)
@@ -1425,23 +1498,23 @@ prepare_tx_mat <- function(tx){
 #' @param names vector with names to be used for each group
 #'
 #' @export
-retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
+retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL) {
   pvalue_var <- dplyr::quo(pvalue)
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
   pvalue_cutoff <- pvalue
   temp_var <- list(...)
-  if (is.list(temp_var)){
+  if (is.list(temp_var)) {
     deg_table_population <- temp_var
   }
-  else{
+  else {
     deg_table_population <- list(temp_var)
   }
-  if (!is.null(base::names(deg_table_population))){
+  if (!is.null(base::names(deg_table_population))) {
     names <- base::names(deg_table_population)
   }
-  deg_table_population <- deg_table_population  %>%
+  deg_table_population <- deg_table_population %>%
     purrr::map_df(~{
       temp_res <- .x
       up_deg <- temp_res %>%
@@ -1452,13 +1525,15 @@ retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
         dplyr::filter(!!pvalue_var < pvalue_cutoff) %>%
         dplyr::filter(`log2FoldChange` < 0) %>%
         nrow()
-      dplyr::data_frame(up = up_deg,
-                 down = down_deg,
-                 total = up_deg + down_deg)
-      })
+      dplyr::data_frame(
+        up = up_deg,
+        down = down_deg,
+        total = up_deg + down_deg
+      )
+    })
   deg_table_population %>%
-    dplyr::mutate(population = names ) %>%
-    dplyr::select(population, up, down, total )
+    dplyr::mutate(population = names) %>%
+    dplyr::select(population, up, down, total)
 }
 #' Leading Edge Genes By Gene Set
 #'
@@ -1474,7 +1549,7 @@ retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL){
 # names <- names <- c("Botucatu 2014", "Neopolis 2014", "Rio 2013", "Rio 2015")
 retrieve_le_table <- function(..., names = NULL) {
   gsea_res_list <- list(...)
-  if (is.null(names)){
+  if (is.null(names)) {
     names <- ""
   }
   le_res <- gsea_res_list %>%
@@ -1486,11 +1561,11 @@ retrieve_le_table <- function(..., names = NULL) {
       .x %>%
         tidyr::unnest() %>%
         dplyr::select(!!gene_set_var, `leadingEdge`) %>%
-        dplyr::mutate( sample = sample_temp )
+        dplyr::mutate(sample = sample_temp)
     })
   le_res %>%
     dplyr::group_by(!!as.name(gene_set_var), `leadingEdge`) %>%
     dplyr::summarise(occurrence = n()) %>%
-    dplyr::arrange(!!as.name(gene_set_var), -occurrence ) %>%
+    dplyr::arrange(!!as.name(gene_set_var), -occurrence) %>%
     dplyr::ungroup()
 }
