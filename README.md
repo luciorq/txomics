@@ -1,17 +1,27 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-txomics <img src="man/figures/logo.png" align="right" height=140/>
-==================================================================
 
-[![Travis build status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics) [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/luciorq/txomics?branch=master&svg=true)](https://ci.appveyor.com/project/luciorq/txomics) <!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/r-lib/pkgdown?branch=master&svg=true)](https://ci.appveyor.com/project/r-lib/pkgdown) --> <!-- [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) --> <!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) --> <!-- [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/pkgdown)](https://cran.r-project.org/package=pkgdown) --> <!-- [![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/pkgdown/master.svg)](https://codecov.io/github/r-lib/pkgdown?branch=master) --> [![CRAN status](https://www.r-pkg.org/badges/version/txomics)](https://cran.r-project.org/package=txomics) [![Coverage status](https://codecov.io/gh/luciorq/txomics/branch/master/graph/badge.svg)](https://codecov.io/github/luciorq/txomics?branch=master)
+# txomics <img src="man/figures/logo.png" align="right" height=140/>
 
-Overview
---------
+[![Travis build
+status](https://travis-ci.com/luciorq/txomics.svg?branch=master)](https://travis-ci.com/luciorq/txomics)
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/luciorq/txomics?branch=master&svg=true)](https://ci.appveyor.com/project/luciorq/txomics)
+<!-- [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/r-lib/pkgdown?branch=master&svg=true)](https://ci.appveyor.com/project/r-lib/pkgdown) -->
+<!-- [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing) -->
+<!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
+<!-- [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/pkgdown)](https://cran.r-project.org/package=pkgdown) -->
+<!-- [![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/pkgdown/master.svg)](https://codecov.io/github/r-lib/pkgdown?branch=master) -->
+[![CRAN
+status](https://www.r-pkg.org/badges/version/txomics)](https://cran.r-project.org/package=txomics)
+[![Coverage
+status](https://codecov.io/gh/luciorq/txomics/branch/master/graph/badge.svg)](https://codecov.io/github/luciorq/txomics?branch=master)
+
+## Overview
 
 Functional Analysis and Visualization of Transcriptomic Data
 
-Installation
-------------
+## Installation
 
 <!--
 When available you will be able to install the released version of txomics from [CRAN](https://CRAN.R-project.org) with:
@@ -23,22 +33,24 @@ When available you will be able to install the released version of txomics from 
 
 And the development version from [GitHub](https://github.com/) with:
 -->
-The development version can be installed from [GitHub](https://github.com/) with:
+
+The development version can be installed from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("luciorq/txomics")
 ## To install the stable release of txomics:
 devtools::install_github("luciorq/txomics@*release")
-## For specific release versions use, changing v1.0.0 with the respective release:
-devtools::install_github("luciorq/txomics@v1.0.0")
+## For specific release versions use, changing v0.2.0 with the respective release:
+devtools::install_github("luciorq/txomics@v0.2.0")
 ```
 
-Analysis conventions
---------------------
+## Analysis conventions
 
--   A `tibble` data frame is the major data structure that is used, allowing easy customization.
--   `txomics` is pipe-friendly and re-exports `%>%` for use.
+  - A `tibble` data frame is the major data structure that is used,
+    allowing easy customization.
+  - `txomics` is pipe-friendly and re-exports `%>%` for use.
 
 <!--
 ## Example
@@ -51,6 +63,8 @@ This is a basic example which shows you how to solve a common problem:
 ```
 -->
 
-------------------------------------------------------------------------
+-----
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of
+Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
+to abide by its terms.

@@ -11,7 +11,9 @@ import_tx(path, source = "salmon", accession = "vectorbase",
 \item{path}{path to files, or vector of paths,
 if \code{is_dir} is set to FALSE}
 
-\item{source}{quantification method used}
+\item{source}{quantification method used.
+Currently supported: "salmon", "kallisto".
+If method is unknown use "none".}
 
 \item{accession}{source of gene names identifier
 supported formats:"vectorbase", "gene", "custom"

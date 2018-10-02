@@ -1,10 +1,14 @@
+# txomics 0.1.9
+
+* added kallisto to `import_tx()`
+
 # txomics 0.1.8
 
 * handlers for expression tables in plots
 * added `plot_gene_expression()`
 * added PC3 to `plot_pca()`, for a pseudo 3d view
 * using `fs` for consistent cross-platform file operations
-* `tx_import()` now accepts custom gene to transcripts conversion table
+* `import_tx()` now accepts custom gene to transcripts conversion table
 
 # txomics 0.1.7
 

@@ -6,8 +6,7 @@
 # reference: https://github.com/jennybc/googlesheets/blob/master/R/googlesheets.R
 if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
-## To test if a suggested package is installed:
-
+## To test if a suggested package is installed
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("Attaching txomics package")
 }
@@ -31,7 +30,9 @@ retrieve_metadata_sra <- function() {
 #' @param path path to files, or vector of paths,
 #'             if \code{is_dir} is set to FALSE
 #'
-#' @param source quantification method used
+#' @param source quantification method used.
+#'   Currently supported: "salmon", "kallisto".
+#'   If method is unknown use "none".
 #'
 #' @param accession source of gene names identifier
 #'              supported formats:"vectorbase", "gene", "custom"
@@ -70,14 +71,24 @@ import_tx <- function(path,
                       names = NULL,
                       gene_table = NULL) {
   ## Function used to import transcripts abundance data
-  if (isTRUE(source == "salmon")) {
-    path_to_files <- c(
-      fs::path(fs::dir_ls(path), "quant.sf"),
-      fs::path(path, "quant.sf")
-    )
-    path_to_files <- path_to_files[fs::file_exists(path_to_files) == TRUE]
+
+  if ( isTRUE(is_dir)) {
+    if (isTRUE(source == "salmon")) {
+      path_to_files <- c(
+        fs::path(fs::dir_ls(path), "quant.sf"),
+        fs::path(path, "quant.sf")
+      )
+      path_to_files <- path_to_files[fs::file_exists(path_to_files) == TRUE]
+    } else {
+      path_to_files <- fs::dir_ls(path)
+      path_to_files <- path_to_files[fs::is_dir(path_to_files)]
+      path_to_files <- fs::dir_ls(path_to_files)
+    }
+  } else {
+    path_to_files <- path
   }
   message("Using files:\n", paste(path_to_files, collapse = "\n"), "\n")
+
   if (!is.null(names)) {
     if (isTRUE(length(names) == length(path_to_files))) {
       names(path_to_files) <- names
@@ -90,11 +101,13 @@ import_tx <- function(path,
       stringr::str_remove("/$") %>%
       stringr::str_remove(".*/")
   }
+
   tx_accession <- readr::read_delim(
     path_to_files[1], "\t",
     escape_double = FALSE, trim_ws = TRUE
   ) %>%
-    dplyr::pull(`Name`)
+    dplyr::pull(1)
+
   if (isTRUE(accession == "vectorbase")) {
     gene_vectorbase <- tx_accession %>% stringr::str_remove("-R.*")
     tx_to_gene <- dplyr::data_frame(
@@ -118,10 +131,25 @@ import_tx <- function(path,
       "GENEID" = gene_custom
     )
   }
-  tx <- tximport::tximport(path_to_files,
-    type = source,
-    tx2gene = tx_to_gene
-  )
+
+  if (isTRUE(source == "none")) {
+    #col_names <- c("target_id","eff_length","est_counts","tpm")
+    tx <- tximport::tximport(
+      files = path_to_files,
+      type = source,
+      tx2gene = tx_to_gene#,
+      #txIdCol = col_names[1],
+      #abundanceCol = col_names[4],
+      #countsCol = col_names[3],
+      #lengthCol = col_names[2]
+    )
+  }else {
+    tx <- tximport::tximport(
+      files = path_to_files,
+      type = source,
+      tx2gene = tx_to_gene
+    )
+  }
   tx
 }
 
@@ -306,13 +334,16 @@ de_analysis <- function(tx, sample_table, contrast_var,
   ## END Experimental
   if (isTRUE(sample_replicates)) {
     if (isTRUE(beta_prior)) {
-      dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
+      dds <- DESeq2::DESeq(dds1, betaPrior = TRUE,
+                           parallel = TRUE)
       res <- DESeq2::results(dds,
         alpha = 0.05,
-        contrast = c(contrast_var, numerator, denominator)
+        contrast = c(contrast_var, numerator, denominator),
+        parallel = TRUE
       )
     } else {
-      dds <- DESeq2::DESeq(dds1, betaPrior = FALSE)
+      dds <- DESeq2::DESeq(dds1, betaPrior = FALSE,
+                           parallel = TRUE)
       res <- DESeq2::lfcShrink(dds,
         parallel = TRUE,
         coef = paste0(
@@ -320,7 +351,8 @@ de_analysis <- function(tx, sample_table, contrast_var,
           numerator,
           "_vs_", denominator
         ),
-        type = "apeglm"
+        type = "apeglm",
+        parallel = TRUE
       )
     }
   } else {
