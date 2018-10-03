@@ -32,7 +32,8 @@ Imports:
     rsvg,
     VennDiagram,
     RColorBrewer,
-    fs
+    fs,
+    rjson
 RoxygenNote: 6.1.0
 URL: http://luciorq.github.io/txomics, https://github.com/luciorq/txomics
 BugReports: https://github.com/luciorq/txomics/issues
