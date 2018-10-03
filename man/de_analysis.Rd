@@ -5,7 +5,8 @@
 \title{Perform Differential Expression Analysis}
 \usage{
 de_analysis(tx, sample_table, contrast_var, numerator, denominator,
-  batch_var = NULL, beta_prior = TRUE, force_rep = FALSE)
+  batch_var = NULL, beta_prior = TRUE, force_rep = FALSE,
+  parallel = FALSE)
 }
 \arguments{
 \item{tx}{imported transcripts object containing reads counts}
@@ -24,6 +25,9 @@ of each sample and experimental design}
 \item{beta_prior}{default = TRUE, set to FALSE to use apeglm method}
 
 \item{force_rep}{default = FALSE, experimental}
+
+\item{parallel}{Use all available cores to run.
+Uses significantly more RAM. Default = FALSE.}
 }
 \value{
 A \code{tibble} object

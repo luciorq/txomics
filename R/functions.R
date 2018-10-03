@@ -18,9 +18,9 @@ if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 #' retrieve metadata from NCBI SRA
 #'
 retrieve_metadata_sra <- function() {
-  ## This function retrieve metadata from sequencing run
-  ## Using NCBI SRA
-  ## INCOMPLETE
+  # This function retrieve metadata from sequencing run
+  # Using NCBI SRA
+  # INCOMPLETE
 }
 
 #' Import Expression Data
@@ -276,6 +276,9 @@ filter_tx <- function(tx, sample_table, var_column = NULL, var_levels = NULL) {
 #'
 #' @param force_rep default = FALSE, experimental
 #'
+#' @param parallel Use all available cores to run.
+#'   Uses significantly more RAM. Default = FALSE.
+#'
 #' @return A \code{tibble} object
 #'
 #' @importFrom stats as.formula
@@ -288,7 +291,8 @@ de_analysis <- function(tx, sample_table, contrast_var,
                         numerator, denominator,
                         batch_var = NULL,
                         beta_prior = TRUE,
-                        force_rep = FALSE) {
+                        force_rep = FALSE,
+                        parallel = FALSE) {
   lib_names <- colnames(tx$counts)
   var_column <- colnames(sample_table[1])
   sample_table <- sample_table %>%
@@ -322,6 +326,7 @@ de_analysis <- function(tx, sample_table, contrast_var,
     dds <- DESeq2::DESeq(dds1, betaPrior = TRUE)
     res <- DESeq2::results(dds,
       alpha = 0.05,
+      parallel = parallel,
       contrast = c(contrast_var, numerator, denominator)
     )
     if (!isTRUE("data.frame" %in% class(res))) {
@@ -334,16 +339,19 @@ de_analysis <- function(tx, sample_table, contrast_var,
   ## END Experimental
   if (isTRUE(sample_replicates)) {
     if (isTRUE(beta_prior)) {
-      dds <- DESeq2::DESeq(dds1, betaPrior = TRUE,
-                           parallel = TRUE)
+      dds <- DESeq2::DESeq(dds1,
+                           parallel = parallel,
+                           betaPrior = TRUE
+                           )
       res <- DESeq2::results(dds,
         alpha = 0.05,
-        contrast = c(contrast_var, numerator, denominator),
-        parallel = TRUE
+        parallel = parallel,
+        contrast = c(contrast_var, numerator, denominator)
       )
     } else {
-      dds <- DESeq2::DESeq(dds1, betaPrior = FALSE,
-                           parallel = TRUE)
+      dds <- DESeq2::DESeq(dds1,
+                           parallel = parallel,
+                           betaPrior = FALSE)
       res <- DESeq2::lfcShrink(dds,
         parallel = TRUE,
         coef = paste0(
@@ -351,8 +359,8 @@ de_analysis <- function(tx, sample_table, contrast_var,
           numerator,
           "_vs_", denominator
         ),
-        type = "apeglm",
-        parallel = TRUE
+        parallel = parallel,
+        type = "apeglm"
       )
     }
   } else {

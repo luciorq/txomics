@@ -83,7 +83,7 @@
       <h1>Using txomics - Hands-on Tutorial</h1>
                         <h4 class="author">Lucio Rezende Queiroz</h4>
             
-            <h4 class="date">2018-10-02</h4>
+            <h4 class="date">2018-10-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/luciorq/txomics/blob/master/vignettes/using_txomics.Rmd"><code>vignettes/using_txomics.Rmd</code></a></small>
       <div class="hidden name"><code>using_txomics.Rmd</code></div>
@@ -292,10 +292,10 @@
 <a class="sourceLine" id="cb4-6" data-line-number="6"><span class="co">#&gt; estimating size factors</span></a>
 <a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co">#&gt; using 'avgTxLength' from assays(dds), correcting for library size</span></a>
 <a class="sourceLine" id="cb4-8" data-line-number="8"><span class="co">#&gt; estimating dispersions</span></a>
-<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="co">#&gt; gene-wise dispersion estimates: 22 workers</span></a>
+<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="co">#&gt; gene-wise dispersion estimates</span></a>
 <a class="sourceLine" id="cb4-10" data-line-number="10"><span class="co">#&gt; mean-dispersion relationship</span></a>
-<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co">#&gt; final dispersion estimates, MLE betas: 22 workers</span></a>
-<a class="sourceLine" id="cb4-12" data-line-number="12"><span class="co">#&gt; fitting model and testing: 22 workers</span></a>
+<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co">#&gt; final dispersion estimates</span></a>
+<a class="sourceLine" id="cb4-12" data-line-number="12"><span class="co">#&gt; fitting model and testing</span></a>
 <a class="sourceLine" id="cb4-13" data-line-number="13"></a>
 <a class="sourceLine" id="cb4-14" data-line-number="14">de_results <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb4-15" data-line-number="15"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span>(pvalue) <span class="op">%&gt;%</span></a>
@@ -319,16 +319,16 @@
 <td align="right">0.2608504</td>
 <td align="right">2.736410</td>
 <td align="right">0.0062114</td>
-<td align="right">0.4720629</td>
+<td align="right">0.4720631</td>
 </tr>
 <tr class="even">
 <td align="left">AAEL000071</td>
 <td align="right">99.84505</td>
 <td align="right">-0.6362684</td>
-<td align="right">0.2784496</td>
+<td align="right">0.2784497</td>
 <td align="right">-2.285039</td>
 <td align="right">0.0223105</td>
-<td align="right">0.7451868</td>
+<td align="right">0.7451870</td>
 </tr>
 <tr class="odd">
 <td align="left">AAEL000075</td>
@@ -337,7 +337,7 @@
 <td align="right">0.2838283</td>
 <td align="right">2.122122</td>
 <td align="right">0.0338275</td>
-<td align="right">0.7451868</td>
+<td align="right">0.7451870</td>
 </tr>
 <tr class="even">
 <td align="left">AAEL000109</td>
@@ -346,16 +346,16 @@
 <td align="right">0.2586498</td>
 <td align="right">1.976331</td>
 <td align="right">0.0481173</td>
-<td align="right">0.7451868</td>
+<td align="right">0.7451870</td>
 </tr>
 <tr class="odd">
 <td align="left">AAEL000097</td>
 <td align="right">118.96447</td>
-<td align="right">-0.4843117</td>
+<td align="right">-0.4843116</td>
 <td align="right">0.2525720</td>
 <td align="right">-1.917519</td>
 <td align="right">0.0551720</td>
-<td align="right">0.7451868</td>
+<td align="right">0.7451870</td>
 </tr>
 <tr class="even">
 <td align="left">AAEL000041</td>
@@ -363,8 +363,8 @@
 <td align="right">-0.4071233</td>
 <td align="right">0.2154710</td>
 <td align="right">-1.889458</td>
-<td align="right">0.0588305</td>
-<td align="right">0.7451868</td>
+<td align="right">0.0588306</td>
+<td align="right">0.7451870</td>
 </tr>
 </tbody>
 </table>
@@ -394,65 +394,65 @@
 <tr class="odd">
 <td align="left">
 <a href="GO:0005549_odorant" class="uri">GO:0005549_odorant</a> binding</td>
-<td align="right">0.0234111</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0234422</td>
+<td align="right">0.458827</td>
 <td align="right">-0.8185600</td>
-<td align="right">-1.547166</td>
-<td align="right">1282</td>
+<td align="right">-1.546627</td>
+<td align="right">1283</td>
 <td align="right">4</td>
 <td align="left">c(“AAEL000071”, “AAEL000073”)</td>
 </tr>
 <tr class="even">
 <td align="left"><a href="GO:0005737_cytoplasm" class="uri">GO:0005737_cytoplasm</a></td>
-<td align="right">0.0423475</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0424601</td>
+<td align="right">0.458827</td>
 <td align="right">0.9189189</td>
-<td align="right">1.432563</td>
-<td align="right">2023</td>
+<td align="right">1.432043</td>
+<td align="right">2028</td>
 <td align="right">2</td>
 <td align="left">c(“AAEL000109”, “AAEL000108”)</td>
 </tr>
 <tr class="odd">
 <td align="left">
 <a href="GO:0016051_carbohydrate" class="uri">GO:0016051_carbohydrate</a> biosynthetic process</td>
-<td align="right">0.0512249</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0513588</td>
+<td align="right">0.458827</td>
 <td align="right">-0.9866667</td>
-<td align="right">-1.310102</td>
-<td align="right">2550</td>
+<td align="right">-1.309829</td>
+<td align="right">2556</td>
 <td align="right">1</td>
 <td align="left">AAEL000097</td>
 </tr>
 <tr class="even">
 <td align="left">
 <a href="GO:0004970_ionotropic" class="uri">GO:0004970_ionotropic</a> glutamate receptor activity</td>
-<td align="right">0.0542917</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0545164</td>
+<td align="right">0.458827</td>
 <td align="right">-0.7318364</td>
-<td align="right">-1.482081</td>
-<td align="right">2994</td>
+<td align="right">-1.481831</td>
+<td align="right">3004</td>
 <td align="right">5</td>
 <td align="left">c(“AAEL000011”, “AAEL000063”, “AAEL000089”, “AAEL000066”)</td>
 </tr>
 <tr class="odd">
 <td align="left">
 <a href="GO:0008152_metabolic" class="uri">GO:0008152_metabolic</a> process</td>
-<td align="right">0.0715138</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0715900</td>
+<td align="right">0.458827</td>
 <td align="right">0.8918919</td>
-<td align="right">1.390429</td>
-<td align="right">3417</td>
+<td align="right">1.389924</td>
+<td align="right">3420</td>
 <td align="right">2</td>
 <td align="left">c(“AAEL000109”, “AAEL000101”)</td>
 </tr>
 <tr class="even">
 <td align="left">
 <a href="GO:0000287_magnesium" class="uri">GO:0000287_magnesium</a> ion binding</td>
-<td align="right">0.0786423</td>
-<td align="right">0.4575551</td>
+<td align="right">0.0788609</td>
+<td align="right">0.458827</td>
 <td align="right">0.9733333</td>
-<td align="right">1.292556</td>
-<td align="right">3947</td>
+<td align="right">1.292307</td>
+<td align="right">3959</td>
 <td align="right">1</td>
 <td align="left">AAEL000109</td>
 </tr>

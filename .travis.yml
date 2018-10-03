@@ -16,6 +16,10 @@ r:
   - release
 #  - devel
 
+# Workaround for vignette
+r_packages:
+  - rjson
+
 bioc_packages:
   - DESeq2
   - tximport
