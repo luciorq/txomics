@@ -456,7 +456,8 @@ gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
   )
   gsea_res <- gsea_res %>%
     dplyr::as_tibble() %>%
-    dplyr::rename(pvalue = pval)
+    dplyr::rename(pvalue = pval) %>%
+    dplyr::rename(leading_edge = leadingEdge)
   gsea_res
 }
 
@@ -476,7 +477,7 @@ le_analysis <- function(gsea_res, set) {
   gsea_res %>%
     tidyr::unnest() %>%
     dplyr::filter(pathway == set) %>%
-    dplyr::pull(leadingEdge)
+    dplyr::pull(leading_edge)
 }
 
 #' Retrieve Differentially Expressed Genes
@@ -1340,50 +1341,66 @@ plot_gene_expression <- function(gene, tx, sample_table = NULL,
 #'
 #' @export
 #'
+# gsea_res <- gsea_kegg_res; pvalue <- 0.2; fdr = TRUE;
+# gsea_res <- gsea_kegg_res; pvalue <- 0.05; fdr = FALSE;
 plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
   pvalue_cutoff <- pvalue
   pvalue_var <- dplyr::quo(pvalue)
+  pvalue_label <- dplyr::quo(`P-value`)
   if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
+    pvalue_label <- dplyr::quo(`Adjusted p-value`)
   }
   gsea_res_sig <- gsea_res %>%
     dplyr::filter(!!pvalue_var < pvalue_cutoff)
   leading_edge_number <- c()
-  for (paths in gsea_res_sig$leadingEdge) {
+  for (paths in gsea_res_sig$leading_edge) {
     leading_edge_number <- c(leading_edge_number, length(paths))
   }
-  data <- dplyr::data_frame(
+  gsea_res_df <- dplyr::data_frame(
     gene_set = gsea_res_sig %>% dplyr::pull(1),
+    pvalue_temp = gsea_res_sig %>% dplyr::pull(!!pvalue_var),
     NES = gsea_res_sig$NES,
-    `Adjusted p-value` = gsea_res_sig %>%
-      dplyr::pull(!!pvalue_var),
-    `No of LE genes` = leading_edge_number
-  )
+    `Number of LE genes` = leading_edge_number
+  )  %>%
+    dplyr::arrange(NES)
+
+  if (isTRUE(fdr)){
+    gsea_res_df <- gsea_res_df %>%
+      dplyr::rename(`Adjusted p-value` = pvalue_temp)
+  } else {
+    gsea_res_df <- gsea_res_df %>%
+      dplyr::rename(`P-value` = pvalue_temp)
+  }
+
   # Plotting
-  p <- ggplot2::ggplot(data, ggplot2::aes(NES, gene_set))
-  p + ggplot2::geom_point(
-    ggplot2::aes(colour = `Adjusted p-value`, size = `No of LE genes`)
-  ) +
-    ggplot2::scale_color_gradientn(
-      colours = viridis::viridis(4, direction = -1), limits = c(0, 0.05)
-    ) +
-    ggplot2::geom_vline(xintercept = 0, size = 0.5, colour = "gray50") +
-    ggplot2::theme(
-      panel.background = ggplot2::element_rect(
-        fill = "gray95", colour = "gray95"
-      ),
-      panel.grid.major = ggplot2::element_line(
-        size = 0.25, linetype = "solid", colour = "gray90"
-      ),
-      panel.grid.minor = ggplot2::element_line(
-        size = 0.25, linetype = "solid", colour = "gray90"
-      ),
-      axis.title.y = ggplot2::element_blank()
-    ) +
-    ggplot2::expand_limits(x = c(-3, 3)) +
-    ggplot2::scale_x_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3)) +
-    ggplot2::scale_y_discrete(limits = rev(data$gene_set)) +
-    ggpubr::theme_pubr()
+  plot <- gsea_res_df %>%
+    ggplot2::ggplot(ggplot2::aes(NES, gene_set)) +
+      ggplot2::geom_point(
+      ggplot2::aes(colour = !!pvalue_label, size = `Number of LE genes`)) +
+      ggplot2::scale_color_gradientn(
+        colours = viridis::viridis(4, direction = -1),
+        limits = c(0, pvalue_cutoff)
+      ) +
+      ggplot2::geom_vline(xintercept = 0, size = 0.5, colour = "gray50") +
+      ggplot2::theme(
+        panel.background = ggplot2::element_rect(
+          fill = "gray95", colour = "gray95"
+        ),
+        panel.grid.major = ggplot2::element_line(
+          size = 0.25, linetype = "solid", colour = "gray90"
+        ),
+        panel.grid.minor = ggplot2::element_line(
+          size = 0.25, linetype = "solid", colour = "gray90"
+        ),
+        axis.title.y = ggplot2::element_blank()
+      ) +
+      ggplot2::expand_limits(x = c(-3, 3)) +
+      ggplot2::scale_x_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3)) +
+      ggplot2::scale_y_discrete(limits = rev(gsea_res_df$gene_set)) +
+      ggplot2::ylab( "Gene sets") +
+      ggpubr::theme_pubr()
+  plot
 }
 #' Multiple Plot
 #'
@@ -1600,11 +1617,11 @@ retrieve_le_table <- function(..., names = NULL) {
       sample_temp <- .y
       .x %>%
         tidyr::unnest() %>%
-        dplyr::select(!!gene_set_var, `leadingEdge`) %>%
+        dplyr::select(!!gene_set_var, `leading_edge`) %>%
         dplyr::mutate(sample = sample_temp)
     })
   le_res %>%
-    dplyr::group_by(!!as.name(gene_set_var), `leadingEdge`) %>%
+    dplyr::group_by(!!as.name(gene_set_var), `leading_edge`) %>%
     dplyr::summarise(occurrence = n()) %>%
     dplyr::arrange(!!as.name(gene_set_var), -occurrence) %>%
     dplyr::ungroup()
