@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • txomics</title>
+<title>Plot Leading Edge Heatmap — plot_le_heatmap • txomics</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,7 +30,9 @@
 
 
 
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Plot Leading Edge Heatmap — plot_le_heatmap" />
+
+<meta property="og:description" content="plot Ledading Edge analysis results enriched gene sets" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -49,7 +51,7 @@
   </head>
 
   <body>
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -112,86 +114,54 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/luciorq/txomics/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Plot Leading Edge Heatmap</h1>
+    <small class="dont-index">Source: <a href='https://github.com/luciorq/txomics/blob/master/R/functions.R'><code>R/functions.R</code></a></small>
+    <div class="hidden name"><code>plot_le_heatmap.Rd</code></div>
     </div>
 
-    <div id="txomics-0-1-9" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-9" class="anchor"></a>txomics 0.1.9</h1>
-<ul>
-<li>added kallisto to <code><a href="../reference/import_tx.html">import_tx()</a></code>
-</li>
-<li>added <code><a href="../reference/plot_le_heatmap.html">plot_le_heatmap()</a></code> function</li>
-</ul>
-</div>
-    <div id="txomics-0-1-8" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-8" class="anchor"></a>txomics 0.1.8</h1>
-<ul>
-<li>handlers for expression tables in plots</li>
-<li>added <code><a href="../reference/plot_gene_expression.html">plot_gene_expression()</a></code>
-</li>
-<li>added PC3 to <code><a href="../reference/plot_pca.html">plot_pca()</a></code>, for a pseudo 3d view</li>
-<li>using <code>fs</code> for consistent cross-platform file operations</li>
-<li>
-<code><a href="../reference/import_tx.html">import_tx()</a></code> now accepts custom gene to transcripts conversion table</li>
-</ul>
-</div>
-    <div id="txomics-0-1-7" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-7" class="anchor"></a>txomics 0.1.7</h1>
-<ul>
-<li>Added <code>plot_gene_abundance()</code>
-</li>
-<li>Added <code><a href="../reference/plot_gsea_res.html">plot_gsea_res()</a></code>
-</li>
-<li>Added <code><a href="../reference/retrieve_le_table.html">retrieve_le_table()</a></code>
-</li>
-</ul>
-</div>
-    <div id="txomics-0-1-6" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-6" class="anchor"></a>txomics 0.1.6</h1>
-<ul>
-<li>
-<code>txomics</code> now exports <code>dplyr</code> pipe operator <code>%&gt;%</code>
-</li>
-<li>Some consistency changes regarding parameter names</li>
-<li>
-<code><a href="../reference/plot_heatmap.html">plot_heatmap()</a></code> supporting results</li>
-</ul>
-</div>
-    <div id="txomics-0-1-5" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-5" class="anchor"></a>txomics 0.1.5</h1>
-<ul>
-<li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
-</ul>
-</div>
-    <div id="txomics-0-1-0" class="section level1">
-<h1 class="page-header">
-<a href="#txomics-0-1-0" class="anchor"></a>txomics 0.1.0</h1>
-<ul>
-<li>Initial development</li>
-</ul>
-</div>
-  </div>
+    <div class="ref-description">
+    
+    <p>plot Ledading Edge analysis results enriched gene sets</p>
+    
+    </div>
 
+    <pre class="usage"><span class='fu'>plot_le_heatmap</span>(<span class='no'>gsea_res</span>, <span class='kw'>pvalue</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>fdr</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>num</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>gsea_res</th>
+      <td><p>result from gsea_analysis</p></td>
+    </tr>
+    <tr>
+      <th>pvalue</th>
+      <td><p>p-value cut-off for enrichment or differential consideration,
+default = 0.05</p></td>
+    </tr>
+    <tr>
+      <th>fdr</th>
+      <td><p>logical, default = FALSE should False discovery rate adjusted
+pvalue be used instead of pvalue</p></td>
+    </tr>
+    <tr>
+      <th>num</th>
+      <td><p>number of genes to plot, based on the leading edge occurence,
+if num is negative, it is used the absolute num of genes with
+lesser occurence, if num is NULL all genes are used.
+default = NULL.</p></td>
+    </tr>
+    </table>
+    
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <div id="tocnav">
-      <h2>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-        <li><a href="#txomics-0-1-9">0.1.9</a></li>
-        <li><a href="#txomics-0-1-8">0.1.8</a></li>
-        <li><a href="#txomics-0-1-7">0.1.7</a></li>
-        <li><a href="#txomics-0-1-6">0.1.6</a></li>
-        <li><a href="#txomics-0-1-5">0.1.5</a></li>
-        <li><a href="#txomics-0-1-0">0.1.0</a></li>
-      </ul>
-    </div>
-  </div>
+    <h2>Contents</h2>
+    <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
+                </ul>
 
+  </div>
 </div>
 
       <footer>

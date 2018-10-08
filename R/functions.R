@@ -1402,6 +1402,94 @@ plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
       ggpubr::theme_pubr()
   plot
 }
+
+#' Plot Leading Edge Heatmap
+#'
+#' plot Ledading Edge analysis results enriched gene sets
+#'
+#' @param gsea_res result from gsea_analysis
+#'
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#'
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
+#'
+#' @param num  number of genes to plot, based on the leading edge occurence,
+#'            if num is negative, it is used the absolute num of genes with
+#'            lesser occurence, if num is NULL all genes are used.
+#'            default = NULL.
+#' @export
+#'
+# gsea_res <- gsea_kegg_res; pvalue <- 0.2; fdr = TRUE; num <- 30;
+# gsea_res <- gsea_reactome_res; pvalue <- 0.05; fdr = FALSE; num <- -20;
+plot_le_heatmap <- function(gsea_res, pvalue = 0.05, fdr = FALSE,
+                            num = NULL) {
+  pvalue_cutoff <- pvalue
+  pvalue_var <- dplyr::quo(pvalue)
+  if (isTRUE(fdr)) {
+    pvalue_var <- dplyr::quo(padj)
+  }
+  gsea_res_sig <- gsea_res %>%
+    dplyr::filter(!!pvalue_var < pvalue_cutoff)
+  le_df <- gsea_res_sig %>%
+    dplyr::select(pathway, leading_edge) %>%
+    tidyr::unnest()
+
+  le_occurence_df <- le_df %>%
+    dplyr::group_by(leading_edge) %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(-n)
+
+  if (is.null(num)) {
+    le_genes <- unique(le_occurence_df$leading_edge)
+  } else if (isTRUE(num < 0)) {
+    le_genes <- le_occurence_df %>%
+      dplyr::slice((dplyr::n() - num):dplyr::n()) %>%
+      dplyr::pull(leading_edge)
+  } else if (isTRUE(num > 0)) {
+    le_genes <- le_occurence_df %>%
+      dplyr::slice(1:num) %>%
+      dplyr::pull(leading_edge)
+  } else {
+    stop("`num` should be an integer different from 0 or NULL")
+  }
+
+  le_wide_df <- le_df %>%
+    dplyr::filter(leading_edge %in% le_genes) %>%
+    tidyr::spread(leading_edge, -pathway) %>%
+    dplyr::distinct()
+  le_mat_row_names <- le_wide_df$pathway
+  le_wide_df <- le_wide_df %>%
+    dplyr::select(-pathway) %>%
+    as.data.frame()
+  for (column in colnames(le_wide_df)) {
+    le_wide_df[[column]] <- dplyr::if_else(!is.na(le_wide_df[[column]]), 1, 0)
+  }
+  rownames(le_wide_df) <- le_mat_row_names
+
+  utils::assignInNamespace(
+    x = "draw_colnames",
+    value = "draw_colnames_45",
+    ns = asNamespace("pheatmap")
+  )
+
+  pheatmap::pheatmap(
+    mat = le_wide_df,
+    color = viridis::viridis(2, direction = 1),
+    show_rownames = TRUE,
+    #border_color = NA,
+    treeheight_col = 0,
+    treeheight_row = 0,
+    drop_levels = TRUE,
+    cluster_cols = TRUE,
+    cluster_rows = TRUE,
+    legend = TRUE,
+    legend_breaks = c(0.25, 0.75),
+    legend_labels = c("Not present", "Leading Edge")
+  )
+}
 #' Multiple Plot
 #'
 #' ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)

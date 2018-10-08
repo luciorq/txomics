@@ -1,6 +1,7 @@
 # txomics 0.1.9
 
 * added kallisto to `import_tx()`
+* added `plot_le_heatmap()` function
 
 # txomics 0.1.8
 
