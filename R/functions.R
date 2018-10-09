@@ -555,10 +555,10 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   }
   mat <- expression_matrix[base::rowSums(expression_matrix) > 1, ]
   ## Scaling matrix
-  if (scale == "row") {
+  if (isTRUE(scale == "row")) {
     mat <- base::t(base::scale(base::t(mat), center = TRUE, scale = TRUE))
   } else {
-    if (scale == "column") {
+    if (isTRUE(scale == "column")) {
       mat <- base::scale(mat, center = TRUE, scale = TRUE)
     }
   }
@@ -639,9 +639,15 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
       viridis::viridis(100, direction = 1)
     }
   }
+  breaks_value <- NA
+  if (isTRUE(scale == "row")) {
+    breaks_value <- base::seq(-3, 3, length.out = 101)
+  }
+
   pheatmap::pheatmap(
     mat = mat,
     color = color_function(),
+    breaks = breaks_value,
     annotation_col = annotation_df,
     annotation_colors = annotation_pallete,
     show_rownames = show_rownames,
@@ -1269,7 +1275,7 @@ plot_gsea_heatmap <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     treeheight_row = 30,
     cluster_cols = mat_cluster_cols,
     cluster_rows = mat_cluster_rows,
-    breaks = seq(0, p_value_max, (p_value_max / 100))
+    breaks = base::seq(0, p_value_max, (p_value_max / 100))
   )
 }
 
@@ -1479,7 +1485,7 @@ plot_le_heatmap <- function(gsea_res, pvalue = 0.05, fdr = FALSE,
     mat = le_wide_df,
     color = viridis::viridis(2, direction = 1),
     show_rownames = TRUE,
-    #border_color = NA,
+    # border_color = NA,
     treeheight_col = 0,
     treeheight_row = 0,
     drop_levels = TRUE,
