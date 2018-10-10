@@ -643,7 +643,6 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
   if (isTRUE(scale == "row")) {
     breaks_value <- base::seq(-3, 3, length.out = 101)
   }
-
   pheatmap::pheatmap(
     mat = mat,
     color = color_function(),
@@ -1172,6 +1171,82 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
     rsvg::rsvg_pdf(svg = file_name_svg, file = file_name_pdf)
   }
 }
+
+#' Plot Differentially Expressed Genes Heatmap
+#'
+#' Plot a expression heatmap of differentially expressed genes de_analysis
+#'
+#' @param tx \code{txi} object, object imported with
+#'            `import_tx()` or data frame wih gene abundance
+#'
+#' @param de_res results from de_analysis function
+
+#' @param pvalue p-value cut-off for enrichment or differential consideration,
+#'               default = 0.05
+#'
+#' @param fdr logical, default = FALSE should False discovery rate adjusted
+#'               pvalue be used instead of pvalue
+#'
+#' @export
+#'
+# de_res <- de_res;tx=imported_transcripts;pvalue = 0.1;fdr = TRUE;
+plot_deg_heatmap <- function(tx, de_res, pvalue = 0.05, fdr = FALSE) {
+  pvalue_cutoff <- pvalue
+  pvalue_var <- dplyr::quo(pvalue)
+  if (isTRUE(fdr)) {
+    pvalue_var <- dplyr::quo(padj)
+  }
+  deg_names <- de_res %>%
+    dplyr::filter(!is.na(!!pvalue_var)) %>%
+    dplyr::filter(!!pvalue_var <= pvalue_cutoff) %>%
+    dplyr::pull(gene)
+  if (isTRUE(is.list(tx))) {
+    expr_df <- tx$abundance
+  } else {
+    stop("Invalid imported tx")
+  }
+  heatmap_df <- expr_df %>%
+    dplyr::as_tibble(rownames = "gene") %>%
+    dplyr::filter(gene %in% deg_names)
+  heatmap_row_names <- heatmap_df %>%
+    dplyr::pull(gene)
+  heatmap_df <- heatmap_df %>%
+    dplyr::select(-gene) %>%
+    base::as.data.frame()
+  rownames(heatmap_df) <- heatmap_row_names
+
+
+  ## Sorting dendograms
+  sort_hclust <- function(...) {
+    stats::as.hclust(dendsort::dendsort(stats::as.dendrogram(...)))
+  }
+  mat_cluster_cols <- stats::hclust(stats::dist(t(heatmap_df)))
+  mat_cluster_cols <- sort_hclust(mat_cluster_cols)
+  mat_cluster_rows <- sort_hclust(stats::hclust(stats::dist(heatmap_df)))
+
+  breaks_value <- base::seq(-3, 3, length.out = 101)
+
+  utils::assignInNamespace(
+    x = "draw_colnames",
+    value = "draw_colnames_45",
+    ns = asNamespace("pheatmap")
+  )
+
+  pheatmap::pheatmap(
+    mat = heatmap_df,
+    color =  grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(
+      n = 7, name = "PRGn")))(100),
+    breaks = breaks_value,
+    show_rownames = TRUE,
+    border_color = NA,
+    treeheight_col = 30,
+    treeheight_row = 30,
+    cluster_cols = mat_cluster_cols,
+    cluster_rows = mat_cluster_rows,
+    scale = "row"
+  )
+}
+
 #' Plot a Heatmap From gsea_analysis
 #'
 #' Plot a heatmap of enriched gene sets from gsea_analysis
@@ -1683,8 +1758,8 @@ retrieve_deg_table <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL) {
       )
     })
   deg_table_population %>%
-    dplyr::mutate(population = names) %>%
-    dplyr::select(population, up, down, total)
+    dplyr::mutate(sample = names) %>%
+    dplyr::select(sample, up, down, total)
 }
 #' Leading Edge Genes By Gene Set
 #'
@@ -1720,3 +1795,11 @@ retrieve_le_table <- function(..., names = NULL) {
     dplyr::arrange(!!as.name(gene_set_var), -occurrence) %>%
     dplyr::ungroup()
 }
+
+
+
+# tx <- imported_transcripts
+#tidy_tx <- function(tx){
+#  tx[[3]]
+#}
+#tidy_tx(imported_transcripts)
