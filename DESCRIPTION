@@ -1,12 +1,13 @@
 Package: txomics
 Type: Package
 Title: Functional Analysis and Visualization of Transcriptomic Data
-Version: 0.1.8
-Authors@R: person("Lucio", "Rezende Queiroz", 
-                  email = "luciorqueiroz@gmail.com",
-                  role = c("aut", "cre"),
-                  comment = c(ORCID="0000-0002-6090-1834")
-           )
+Version: 0.1.9
+Authors@R: 
+  person("Lucio", "Rezende Queiroz", 
+         email = "luciorqueiroz@gmail.com",
+         role = c("aut", "cre"),
+         comment = c(ORCID="0000-0002-6090-1834")
+  )
 Description: Functional analysis of transcriptomic data.
 License: MIT + file LICENSE
 Encoding: UTF-8

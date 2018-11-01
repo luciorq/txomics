@@ -2,7 +2,8 @@
 
 * added kallisto to `import_tx()`
 * added `plot_le_heatmap()` function
-* aded `plot_deg_heatmap()` function
+* added `plot_deg_heatmap()` function
+* added `label` to `plot_pca()`
 
 # txomics 0.1.8
 

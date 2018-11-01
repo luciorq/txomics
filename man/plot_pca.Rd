@@ -4,7 +4,8 @@
 \alias{plot_pca}
 \title{Plot Flat Three Dimensional PCA}
 \usage{
-plot_pca(tx, sample_table, color_by = NULL, num = NULL)
+plot_pca(tx, sample_table, color_by = NULL, num = NULL,
+  label = FALSE)
 }
 \arguments{
 \item{tx}{txi object, matrix or data frame with trancript abundance}
@@ -18,6 +19,8 @@ of each sample and experimental design}
 if num is negative, it is used the absolute num of genes with
 smaller, if num is NULL all genes are used.
 default = NULL.}
+
+\item{label}{print labels for each sample. Default = FALSE}
 }
 \description{
 Plot the results of a pseudo/flat tri-dimensional

@@ -127,7 +127,8 @@ principal component analysis, using 2 two dimensional plots.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_pca</span>(<span class='no'>tx</span>, <span class='no'>sample_table</span>, <span class='kw'>color_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>num</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_pca</span>(<span class='no'>tx</span>, <span class='no'>sample_table</span>, <span class='kw'>color_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>num</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>label</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -151,6 +152,10 @@ of each sample and experimental design</p></td>
 if num is negative, it is used the absolute num of genes with
 smaller, if num is NULL all genes are used.
 default = NULL.</p></td>
+    </tr>
+    <tr>
+      <th>label</th>
+      <td><p>print labels for each sample. Default = FALSE</p></td>
     </tr>
     </table>
     
