@@ -38,7 +38,7 @@ testthat::test_that("Test if plot_pca runs", {
     -0.30550222096098, -0.211692682937508, 0.0277335181407126
   ))
 
-  res3 <- plot_pca(imported_tx)
+  res3 <- plot_pca(imported_tx, label = TRUE)
 
 
   testthat::expect_equal(res3$data$PC1, c(

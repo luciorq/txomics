@@ -4,7 +4,11 @@
 
 # quiets concerns of R CMD check re: the .'s that appear in pipelines
 # reference: https://github.com/jennybc/googlesheets/blob/master/R/googlesheets.R
-if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(
+    base::c(".")
+  )
+}
 
 ## To test if a suggested package is installed
 .onAttach <- function(libname, pkgname) {
@@ -676,14 +680,19 @@ plot_heatmap <- function(tx, sample_table, color_by = NULL,
 #'            smaller, if num is NULL all genes are used.
 #'            default = NULL.
 #'
+#' @param label print labels for each sample. Default = FALSE
+#'
 #' @importFrom stats prcomp
 #'
 #' @importFrom utils head
 #'
 #' @export
 #'
-plot_pca <- function(tx, sample_table,
-                     color_by = NULL, num = NULL) {
+plot_pca <- function(tx,
+                     sample_table,
+                     color_by = NULL,
+                     num = NULL,
+                     label = FALSE) {
   expression_matrix <- txomics::prepare_tx_mat(tx)
   if (is.null(num)) {
     num <- nrow(expression_matrix)
@@ -779,6 +788,10 @@ plot_pca <- function(tx, sample_table,
         breaks = breaks_y,
         limits = base::range(breaks_y)
       )
+    if (isTRUE(label)) {
+      plot_obj <- plot_obj +
+        ggrepel::geom_text_repel(ggplot2::aes(label = sample))
+    }
     return(plot_obj)
   }
   if (!isTRUE(all(color_by %in% names(sample_table)))) {
@@ -796,8 +809,9 @@ plot_pca <- function(tx, sample_table,
 
   breaks_x <- base::pretty(df$value)
   breaks_y <- base::pretty(df$PC1)
-  df %>%
-    ggplot2::ggplot(ggplot2::aes(x = value, y = PC1, color = group)) +
+  plot_obj <- df %>%
+    ggplot2::ggplot(ggplot2::aes(x = value, y = PC1,
+                                 color = group)) +
     ggplot2::geom_point(size = 4) +
     ggplot2::xlab(paste0(
       "PC2: ", round(var_percent[2] * 100), "% variance",
@@ -826,9 +840,14 @@ plot_pca <- function(tx, sample_table,
     ggplot2::scale_x_continuous(breaks = breaks_x, limits = base::range(breaks_x)) +
     ggplot2::scale_y_continuous(breaks = breaks_y, limits = base::range(breaks_y))
   # ggplot2::xlab(paste0("PC2: ", round(var_percent[2] * 100), "% variance")) +
-  #  ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
-  #  ggplot2::scale_color_viridis_d( direction = 1 ) +
-  #  ggpubr::theme_pubr()
+  # ggplot2::ylab(paste0("PC1: ", round(var_percent[1] * 100), "% variance")) +
+  # ggplot2::scale_color_viridis_d( direction = 1 ) +
+  # ggpubr::theme_pubr()
+  if (isTRUE(label)) {
+    plot_obj <- plot_obj +
+      ggrepel::geom_text_repel(ggplot2::aes(label = sample))
+  }
+  plot_obj
 }
 #' Volcano Plot
 #'
