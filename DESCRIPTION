@@ -35,7 +35,7 @@ Imports:
     RColorBrewer,
     fs,
     rjson
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 URL: http://luciorq.github.io/txomics, https://github.com/luciorq/txomics
 BugReports: https://github.com/luciorq/txomics/issues
 Suggests: 
