@@ -16,9 +16,6 @@ r:
   - release
 #  - devel
 
-bioc_required: true
-bioc_use_devel: true
-
 # Workaround for vignette
 r_packages:
   - rjson
