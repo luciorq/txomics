@@ -4,13 +4,16 @@
 \alias{gsea_analysis}
 \title{Perform Gene Set Enrichment Analysis}
 \usage{
-gsea_analysis(de_res, gene_sets, file_ext = "gmt")
+gsea_analysis(de_res, gene_sets, fdr = NULL, file_ext = "gmt")
 }
 \arguments{
 \item{de_res}{results from de_analysis function}
 
 \item{gene_sets}{tidy data frame of the gene sets or
 named list of genes named by gene set}
+
+\item{fdr}{should fdr be used, default = NULL.
+If fdr = NULL, uses only log2FoldChange to rank.}
 
 \item{file_ext}{File extension where the gene
 sets should be loaded GMT is the default for GSEA

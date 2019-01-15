@@ -5,7 +5,7 @@
 \title{Volcano Plot}
 \usage{
 plot_volcano(de_res, pvalue = 0.05, lfc_threshold = NULL,
-  fdr = FALSE)
+  fdr = FALSE, max = 30)
 }
 \arguments{
 \item{de_res}{de_analysis results}
@@ -17,6 +17,8 @@ default = 0.05}
 
 \item{fdr}{logical, default = FALSE should False discovery rate adjusted
 pvalue be used instead of pvalue}
+
+\item{max}{maximum number of names of DEGs to be plotted. Default = 30.}
 }
 \value{
 A \code{ggplot} object

@@ -410,6 +410,10 @@ de_analysis <- function(tx, sample_table, contrast_var,
 #' @param gene_sets tidy data frame of the gene sets or
 #'                  named list of genes named by gene set
 #'
+#' @param fdr should fdr be used, default = NULL.
+#'            If fdr = NULL, uses only log2FoldChange to rank.
+#'
+#'
 #' @param file_ext File extension where the gene
 #'                 sets should be loaded GMT is the default for GSEA
 #'                 rds to load rds saved files. DEPRECATED
@@ -420,16 +424,34 @@ de_analysis <- function(tx, sample_table, contrast_var,
 #'
 # de_res <- de_res_rio2013
 # gene_sets <- aaegdata::kegg_gene_sets
-gsea_analysis <- function(de_res, gene_sets, file_ext = "gmt") {
-  de_res %>%
+gsea_analysis <- function(de_res,
+                          gene_sets,
+                          fdr = NULL,
+                          file_ext = "gmt") {
+  temp_res <- de_res %>%
     dplyr::mutate(
       log2FoldChange = dplyr::if_else(is.na(log2FoldChange), 0, log2FoldChange)
-    )
-  sorted_res <- de_res %>%
-    dplyr::select(gene, log2FoldChange) %>%
-    dplyr::arrange(log2FoldChange)
+    ) %>%
+    dplyr::mutate(pvalue = dplyr::if_else(is.na(pvalue), 1, pvalue)) %>%
+    dplyr::mutate(padj = dplyr::if_else(is.na(padj), 1, padj))
+  if (isTRUE(fdr)){
+  sorted_res <- temp_res %>%
+    dplyr::mutate(score = (log2FoldChange * (-log10(padj)))) %>%
+    dplyr::select(gene, log2FoldChange, padj, score) %>%
+    dplyr::arrange(score)
+  } else if (is.null(fdr)) {
+    sorted_res <- temp_res %>%
+      dplyr::mutate(score = log2FoldChange ) %>%
+      dplyr::select(gene, log2FoldChange, score) %>%
+      dplyr::arrange(score)
+  } else {
+    sorted_res <- temp_res %>%
+      dplyr::mutate(score = (log2FoldChange * (-log10(pvalue)))) %>%
+      dplyr::select(gene, log2FoldChange, pvalue, score) %>%
+      dplyr::arrange(score)
+  }
   # ordered from strongest down-regulated to strongest upregulated
-  ranked_genes <- sorted_res$log2FoldChange
+  ranked_genes <- sorted_res$score
   names(ranked_genes) <- sorted_res$gene
   if (isTRUE("data.frame" %in% class(de_res))) {
     gene_set_col <- base::colnames(gene_sets)[1]
@@ -863,12 +885,17 @@ plot_pca <- function(tx,
 #' @param fdr logical, default = FALSE should False discovery rate adjusted
 #'               pvalue be used instead of pvalue
 #'
+#' @param max maximum number of names of DEGs to be plotted. Default = 30.
+#'
 #' @return A \code{ggplot} object
 #'
 #' @export
 #'
-plot_volcano <- function(de_res, pvalue = 0.05,
-                         lfc_threshold = NULL, fdr = FALSE) {
+plot_volcano <- function(de_res,
+                         pvalue = 0.05,
+                         lfc_threshold = NULL,
+                         fdr = FALSE,
+                         max = 30) {
   # scatter_plot <- function(data, x, y) {
   #   x <- enquo(x)
   #   y <- enquo(y)
@@ -974,6 +1001,13 @@ plot_volcano <- function(de_res, pvalue = 0.05,
   df$sig <- factor(df$sig, levels = sig_text)
   color_pallete <- viridis::viridis(4)
   names(color_pallete) <- sig_text
+
+  ggrepel_df <- df %>%
+    dplyr::filter(sig %in% sig_text[4]) %>%
+    dplyr::mutate(temp_var = (abs(log2FoldChange)*(-log10(pvalue)))) %>%
+    dplyr::arrange(-temp_var) %>%
+    utils::head(n = max)
+
   p <- df %>%
     ggplot2::ggplot(ggplot2::aes(log2FoldChange, -log10(pvalue))) +
     ggplot2::geom_hline(yintercept = -log10(pvalue_line), alpha = 0.5) +
@@ -984,7 +1018,7 @@ plot_volcano <- function(de_res, pvalue = 0.05,
       values = color_pallete
     ) +
     ggrepel::geom_text_repel(
-      data = dplyr::filter(df, sig %in% sig_text[4]),
+      data = ggrepel_df,
       ggplot2::aes(label = gene)
     ) +
     ggplot2::scale_x_continuous(
@@ -999,6 +1033,7 @@ plot_volcano <- function(de_res, pvalue = 0.05,
     ggplot2::labs(color = " ")
   p
 }
+
 #' Plot GSEA Enrichment Curve and Table
 #'
 #' Plots enrichment table and individual enrichment graph for
@@ -1195,21 +1230,25 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 #'
 #' Plot a expression heatmap of differentially expressed genes de_analysis
 #'
+#' @param de_res results from de_analysis function
+
 #' @param tx \code{txi} object, object imported with
 #'            `import_tx()` or data frame wih gene abundance
 #'
-#' @param de_res results from de_analysis function
-
 #' @param pvalue p-value cut-off for enrichment or differential consideration,
 #'               default = 0.05
 #'
 #' @param fdr logical, default = FALSE should False discovery rate adjusted
 #'               pvalue be used instead of pvalue
 #'
+#' @param row_names variable / coluimn name used for gene / row annotation.
+#'                  Default = "gene" column
+#'
 #' @export
 #'
 # de_res <- de_res;tx=imported_transcripts;pvalue = 0.1;fdr = TRUE;
-plot_deg_heatmap <- function(tx, de_res, pvalue = 0.05, fdr = FALSE) {
+plot_deg_heatmap <- function(de_res, tx, pvalue = 0.05, fdr = FALSE,
+                             row_names = NULL) {
   pvalue_cutoff <- pvalue
   pvalue_var <- dplyr::quo(pvalue)
   if (isTRUE(fdr)) {
@@ -1227,6 +1266,19 @@ plot_deg_heatmap <- function(tx, de_res, pvalue = 0.05, fdr = FALSE) {
   heatmap_df <- expr_df %>%
     dplyr::as_tibble(rownames = "gene") %>%
     dplyr::filter(gene %in% deg_names)
+
+  if (!is.null(row_names)) {
+    row_names_for_join <- de_res %>%
+      dplyr::select(gene, !!row_names)
+
+    heatmap_df <- heatmap_df %>%
+      dplyr::left_join(row_names_for_join, by = "gene") %>%
+      dplyr::select( -gene ) %>%
+      dplyr::rename( gene = !!row_names)
+  }
+
+  # heatmap_df %>%
+  #  dplyr::filter(!is.na(gene))
   heatmap_row_names <- heatmap_df %>%
     dplyr::pull(gene)
   heatmap_df <- heatmap_df %>%
@@ -1517,31 +1569,38 @@ plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
 #'
 #' @param num  number of genes to plot, based on the leading edge occurence,
 #'            if num is negative, it is used the absolute num of genes with
-#'            lesser occurence, if num is NULL all genes are used.
-#'            default = NULL.
+#'            lesser occurence, if num is NULL all leading edge elements
+#'            are used. Default = NULL.
 #' @export
 #'
 # gsea_res <- gsea_kegg_res; pvalue <- 0.2; fdr = TRUE; num <- 30;
 # gsea_res <- gsea_reactome_res; pvalue <- 0.05; fdr = FALSE; num <- -20;
+# gsea_res <- gsea_go_bp_res_padj; pvalue = 0.05; fdr = FALSE; num <- 100;
 plot_le_heatmap <- function(gsea_res, pvalue = 0.05, fdr = FALSE,
                             num = NULL) {
   pvalue_cutoff <- pvalue
+  # use pvalue or padj
   pvalue_var <- dplyr::quo(pvalue)
   if (isTRUE(fdr)) {
     pvalue_var <- dplyr::quo(padj)
   }
+  # filter gene sets by cutoff
   gsea_res_sig <- gsea_res %>%
     dplyr::filter(!!pvalue_var < pvalue_cutoff)
+  #
   le_df <- gsea_res_sig %>%
     dplyr::select(pathway, leading_edge) %>%
-    tidyr::unnest()
+    tidyr::unnest() %>%
+    dplyr::distinct()
 
+  # arrange by occurence and pvalue
   le_occurence_df <- le_df %>%
     dplyr::group_by(leading_edge) %>%
     dplyr::summarise(n = dplyr::n()) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(-n)
 
+  # slice `num` rows
   if (is.null(num)) {
     le_genes <- unique(le_occurence_df$leading_edge)
   } else if (isTRUE(num < 0)) {

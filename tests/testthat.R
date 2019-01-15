@@ -1,4 +1,4 @@
 library(testthat)
 library(txomics)
 
-test_check("txomics")
+testthat::test_check("txomics")

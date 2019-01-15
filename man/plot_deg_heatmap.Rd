@@ -4,19 +4,23 @@
 \alias{plot_deg_heatmap}
 \title{Plot Differentially Expressed Genes Heatmap}
 \usage{
-plot_deg_heatmap(tx, de_res, pvalue = 0.05, fdr = FALSE)
+plot_deg_heatmap(de_res, tx, pvalue = 0.05, fdr = FALSE,
+  row_names = NULL)
 }
 \arguments{
+\item{de_res}{results from de_analysis function}
+
 \item{tx}{\code{txi} object, object imported with
 `import_tx()` or data frame wih gene abundance}
-
-\item{de_res}{results from de_analysis function}
 
 \item{pvalue}{p-value cut-off for enrichment or differential consideration,
 default = 0.05}
 
 \item{fdr}{logical, default = FALSE should False discovery rate adjusted
 pvalue be used instead of pvalue}
+
+\item{row_names}{variable / coluimn name used for gene / row annotation.
+Default = "gene" column}
 }
 \description{
 Plot a expression heatmap of differentially expressed genes de_analysis
