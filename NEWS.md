@@ -1,6 +1,7 @@
 # txomics 0.1.9
 
 * added kallisto to `import_tx()`.
+* `gsea_analysis()` now has an option to use fold-change and pvalue to rank elements.
 * added `plot_le_heatmap()` function.
 * added `plot_deg_heatmap()` function.
 * added `label` to `plot_pca()`.
