@@ -114,13 +114,13 @@ import_tx <- function(path,
 
   if (isTRUE(accession == "vectorbase")) {
     gene_vectorbase <- tx_accession %>% stringr::str_remove("-R.*")
-    tx_to_gene <- dplyr::data_frame(
+    tx_to_gene <- dplyr::tibble(
       "TXNAME" = tx_accession,
       "GENEID" = gene_vectorbase
     )
   }
   if (isTRUE(accession == "gene")) {
-    tx_to_gene <- dplyr::data_frame(
+    tx_to_gene <- dplyr::tibble(
       "TXNAME" = tx_accession,
       "GENEID" = tx_accession
     )
@@ -130,7 +130,7 @@ import_tx <- function(path,
       dplyr::pull(1)
     gene_custom <- gene_table %>%
       dplyr::pull(2)
-    tx_to_gene <- dplyr::data_frame(
+    tx_to_gene <- dplyr::tibble(
       "TXNAME" = tx_custom,
       "GENEID" = gene_custom
     )
@@ -179,7 +179,7 @@ salmon_libtype <- function(path) {
         lib_type <- paste0(path, "/", lib_name, "/lib_format_counts.json") %>%
           jsonlite::read_json() %>%
           .$`expected_format`
-        dplyr::data_frame(lib, lib_type)
+        dplyr::tibble(lib_name, lib_type)
       },
       path
     )
@@ -724,7 +724,7 @@ plot_pca <- function(tx,
   mat <- base::t(base::scale(base::t(mat), center = TRUE, scale = TRUE))
 
   filtered_mat <- mat %>%
-    dplyr::as_data_frame(rownames = "gene") %>%
+    dplyr::tibble(rownames = "gene") %>%
     dplyr::mutate(row_var = txomics::calc_var_by_row(.[2:length(.)])) %>%
     dplyr::arrange(-row_var)
   if (isTRUE(num > 0)) {
@@ -753,17 +753,17 @@ plot_pca <- function(tx,
   var_percent <- pca$sdev^2 / base::sum(pca$sdev^2)
 
   pc_1 <- pca$x[, 1]
-  pc_1_df <- dplyr::data_frame(
+  pc_1_df <- dplyr::tibble(
     sample = names(pc_1),
     PC1 = pc_1
   )
   pc_2 <- pca$x[, 2]
-  pc_2_df <- dplyr::data_frame(
+  pc_2_df <- dplyr::tibble(
     sample = names(pc_2),
     PC2 = pc_2
   )
   pc_3 <- pca$x[, 3]
-  pc_3_df <- dplyr::data_frame(
+  pc_3_df <- dplyr::tibble(
     sample = names(pc_3),
     PC3 = pc_3
   )
@@ -1247,6 +1247,7 @@ plot_venn_diagram <- function(..., pvalue = 0.05, fdr = FALSE, names = NULL,
 #' @export
 #'
 # de_res <- de_res;tx=imported_transcripts;pvalue = 0.1;fdr = TRUE;
+# de_res <- top_degs_res;tx=filtered_tx;pvalue = 0.2;fdr = TRUE;row_names = "hgnc_symbol";
 plot_deg_heatmap <- function(de_res, tx, pvalue = 0.05, fdr = FALSE,
                              row_names = NULL) {
   pvalue_cutoff <- pvalue
@@ -1517,7 +1518,7 @@ plot_gsea_res <- function(gsea_res, pvalue = 0.05, fdr = FALSE) {
   )  %>%
     dplyr::arrange(NES)
 
-  if (isTRUE(fdr)){
+  if (isTRUE(fdr)) {
     gsea_res_df <- gsea_res_df %>%
       dplyr::rename(`Adjusted p-value` = pvalue_temp)
   } else {
@@ -1876,8 +1877,13 @@ retrieve_le_table <- function(..., names = NULL) {
 
 
 
+
 # tx <- imported_transcripts
 #tidy_tx <- function(tx){
 #  tx[[3]]
 #}
 #tidy_tx(imported_transcripts)
+
+
+
+

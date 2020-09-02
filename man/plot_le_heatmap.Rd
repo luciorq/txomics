@@ -17,8 +17,8 @@ pvalue be used instead of pvalue}
 
 \item{num}{number of genes to plot, based on the leading edge occurence,
 if num is negative, it is used the absolute num of genes with
-lesser occurence, if num is NULL all genes are used.
-default = NULL.}
+lesser occurence, if num is NULL all leading edge elements
+are used. Default = NULL.}
 }
 \description{
 plot Ledading Edge analysis results enriched gene sets
