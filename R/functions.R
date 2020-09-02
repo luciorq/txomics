@@ -1132,7 +1132,7 @@ plot_gsea <- function(gsea_res, de_res, gene_sets,
 #' Plot Venn Diagram
 #'
 #' Plot Venn diagrams, from de_analysis or gsea_analysis results
-#' **Currentry, this version only plots venn diagram with four groups and just
+#' **Currently, this version only plots Venn diagram with four groups and just
 #' save files to file, don't plot directly**
 #'
 #' @param ... de_analysis or gsea_analysis data frames
