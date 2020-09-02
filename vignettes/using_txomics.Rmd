@@ -267,7 +267,7 @@ gsea_results %>%
 plot_heatmap(imported_expression, sample_table, color_by = c("day","treatment"))
 ```
 
-```{r plot-pca}
+```{r plot-pca, eval=FALSE}
 multiplot(
   plot_pca(imported_expression, sample_table, color_by = "day"),
   plot_pca(imported_expression, sample_table, color_by = "treatment")

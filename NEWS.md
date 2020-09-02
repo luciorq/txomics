@@ -4,7 +4,7 @@
 * `gsea_analysis()` now has an option to use fold-change and pvalue to rank elements.
 * added `plot_le_heatmap()` function.
 * added `plot_deg_heatmap()` function.
-* added `label` to `plot_pca()`.
+* added `label` to `plot_pca()`. **BROKEN**
 * added `max` to `plot_volcano()`.
 
 # txomics 0.1.8
